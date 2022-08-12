@@ -1,1 +1,1 @@
-# ChinasoftiTrainingCourse
+# Identity Card OCR

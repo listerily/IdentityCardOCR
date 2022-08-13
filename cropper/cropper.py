@@ -41,12 +41,12 @@ def automatic_brightness_and_contrast(image, clip_hist_percent=1):
 
 def read_and_preprocess(filename):
     image = cv2.imread(filename)
-    image, alpha, beta = automatic_brightness_and_contrast(image)
-    image = np.clip((1.7 * image + 70), 0, 255).astype(np.uint8)
+    image, alpha, beta = automatic_brightness_and_contrast(image, 4)
+    image = np.clip((1.99 * image - 20), 0, 255).astype(np.uint8)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    image = cv2.erode(image, np.ones((4, 4), np.uint8), iterations=1)
-    image = cv2.dilate(image, np.ones((2, 2), np.uint8), iterations=1)
+    image = cv2.erode(image, np.ones((3, 3), np.uint8), iterations=1)
+    image = cv2.dilate(image, np.ones((3, 3), np.uint8), iterations=1)
     image = cv2.resize(image, (1792, 1128))
     return image / 255.
 
@@ -76,7 +76,7 @@ def crop(image, show=True, write=False, write_directory='.'):
 
 
 if __name__ == '__main__':
-    crop(read_and_preprocess('/home/listerily/test.jpg'), show=True, write=True)
     crop(read_and_preprocess('/home/listerily/test3.png'), show=True, write=True)
     crop(read_and_preprocess('/home/listerily/test4.png'), show=True, write=True)
     crop(read_and_preprocess('/home/listerily/test5.png'), show=True, write=True)
+    crop(read_and_preprocess('cards/0.png'), show=True, write=True)

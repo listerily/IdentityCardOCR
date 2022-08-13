@@ -62,16 +62,16 @@ def crop(image, show=True, write=False, write_directory='.'):
     for r in roi:
         sub_image = image[r[0][1]:r[1][1], r[0][0]:r[1][0]]
         images.append(sub_image)
-    if show:
-        for r in roi:
-            image = cv2.rectangle(image, r[0], r[1], (0, 0, 0), 2)
-        plt.imshow(image, 'gray')
-        plt.show()
     if write:
         for r in roi:
             sub_image = image[r[0][1]:r[1][1], r[0][0]:r[1][0]]
             Image.fromarray(np.uint8(sub_image.astype(float) * 255)).save(write_directory + '/' + r[2] + '.png')
-
+    if show:
+        image_copy = np.copy(image)
+        for r in roi:
+            image_copy = cv2.rectangle(image_copy, r[0], r[1], (0, 0, 0), 2)
+        plt.imshow(image_copy, 'gray')
+        plt.show()
     return images
 
 
@@ -79,4 +79,5 @@ if __name__ == '__main__':
     crop(read_and_preprocess('/home/listerily/test3.png'), show=True, write=True)
     crop(read_and_preprocess('/home/listerily/test4.png'), show=True, write=True)
     crop(read_and_preprocess('/home/listerily/test5.png'), show=True, write=True)
-    crop(read_and_preprocess('cards/0.png'), show=True, write=True)
+    crop(read_and_preprocess('/home/listerily/test6.jpg'), show=True, write=True)
+    # crop(read_and_preprocess('cards/0.png'), show=True, write=True)

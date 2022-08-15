@@ -38,12 +38,14 @@ def segment_character(image, axis,
     return boxes
 
 
-def extract_characters(image, show=False, padding=0):
+def extract_characters(image, show=False, padding=0, area_threshold=650):
     boxes = []
-    v_boxes = segment_character(image, 1, show=show)
+    v_boxes = segment_character(image, 1, show=show, space_density_threshold=8, character_density_threshold=10)
     for v_box in v_boxes:
         h_boxes = segment_character(image[v_box[0]:v_box[1], :], 0, show=show)
         for h_box in h_boxes:
+            if (h_box[1] - h_box[0]) * (v_box[1] - v_box[0]) <= area_threshold:
+                continue
             boxes.append((max(0, h_box[0] - padding),
                           max(0, v_box[0] - padding),
                           min(image.shape[1], h_box[1] + 2 * padding),

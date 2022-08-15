@@ -57,34 +57,6 @@ class dataAugmentation(object):
         return aug_list
 
 
-# 对字体图像做等比例缩放
-# class PreprocessResizeKeepRatio(object):
-#
-#     def __init__(self, width, height):
-#         self.width = width
-#         self.height = height
-#
-#     def do(self, cv2_img):
-#         max_width = self.width
-#         max_height = self.height
-#
-#         cur_height, cur_width = cv2_img.shape[:2]
-#
-#         ratio_w = float(max_width) / float(cur_width)
-#         ratio_h = float(max_height) / float(cur_height)
-#         ratio = min(ratio_w, ratio_h)
-#
-#         new_size = (min(int(cur_width * ratio), max_width),
-#                     min(int(cur_height * ratio), max_height))
-#
-#         new_size = (max(new_size[0], 1),
-#                     max(new_size[1], 1),)
-#
-#         resized_img = cv2.resize(cv2_img, new_size)
-#         return resized_img
-
-
-# 查找字体的最小包含矩形
 class FindImageBBox(object):
     def __init__(self, ):
         pass
@@ -173,16 +145,10 @@ class PreprocessResizeKeepRatioFillBG(object):
             width_minus_margin = self.width
             height_minus_margin = self.height
 
-        cur_height, cur_width = cv2_img.shape[:2]
         if len(cv2_img.shape) > 2:
             pix_dim = cv2_img.shape[2]
         else:
             pix_dim = None
-
-        # preprocess_resize_keep_ratio = PreprocessResizeKeepRatio(
-        #     width_minus_margin,
-        #     height_minus_margin)
-        # resized_cv2_img = preprocess_resize_keep_ratio.do(cv2_img)
 
         if self.auto_avoid_fill_bg:
             need_fill_bg = self.is_need_fill_bg(cv2_img)
@@ -194,7 +160,7 @@ class PreprocessResizeKeepRatioFillBG(object):
         # should skip horizontal stroke
         if not self.fill_bg:
             ret_img = cv2.resize(cv2_img, (width_minus_margin,
-                                                   height_minus_margin))
+                                           height_minus_margin))
         else:
             if pix_dim is not None:
                 norm_img = np.zeros((height_minus_margin,
@@ -305,7 +271,7 @@ class Font2Image(object):
 
 
 def get_label_dict():
-    filename = 'C:\\Users\\15723\\Documents\\GitHub\\CPS-OCR-Engine\\ocr\\digit.csv'
+    filename = './digit.csv'
     label_dict = []
     with open(filename, 'r', encoding='UTF-8') as csvfile:
         csv_reader = csv.reader(csvfile)  # 使用csv.reader读取csvfile中的文件
@@ -354,7 +320,6 @@ def create_digit():
     rotate = 15
     rotate_step = 1
 
-
     # 将汉字的label读入，得到（ID：汉字）的映射表label_dict
     char_list = get_label_dict()
 
@@ -383,6 +348,5 @@ def create_digit():
 
     font2image = Font2Image(width, height, need_crop, margin)
 
-    train_digit, test_digit = create_img(char_list, font2image, verified_font_paths, rotate,
-                                         all_rotate_angles, test_ratio)
+    train_digit, test_digit = create_img(char_list, font2image, verified_font_paths, rotate, all_rotate_angles, test_ratio)
     return train_digit, test_digit

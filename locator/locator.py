@@ -28,7 +28,7 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
     gaus_blured_image = cv.GaussianBlur(sized_image, (5, 5), 0)
     median_image = cv.medianBlur(gaus_blured_image,5)
     blured_image = cv.bilateralFilter(median_image, 13, 15, 15)
-
+    blured_image = cv.bilateralFilter(blured_image, 13, 15, 15)
     # cv.imshow('blured_image',blured_image)
     # cv.waitKey()
     # cv.destroyAllWindows()

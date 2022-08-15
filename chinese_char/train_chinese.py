@@ -27,7 +27,7 @@ class Model:
         self.model = tf.keras.Sequential()
 
 
-class LeNet5(Model):
+class MyModel(Model):
     def __init__(self, num):
         super().__init__()
         self.num_classes = num
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     train_dataset = train_dataset.batch(batch_size=64)
     train_dataset = train_dataset.prefetch(AUTOTUNE)
 
-    lenet = LeNet5(len(test_digit.keys()))
-    lenet.setModel()
-    lenet.trainModel(train_dataset, tf_test_feature, tf_test_labels)
+    mm = MyModel(len(test_digit.keys()))
+    mm.setModel()
+    mm.trainModel(train_dataset, tf_test_feature, tf_test_labels)
     #lenet.saveModel()

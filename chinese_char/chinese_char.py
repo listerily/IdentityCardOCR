@@ -286,9 +286,9 @@ def get_label_dict():
 def create_img(id, char_list, font2image, verified_font_paths, rotate, all_rotate_angles, test_ratio):
     test_digit = {}
     train_digit = {}
-    for i in range(id, id + 10):  # 外层循环是字
-        # if i >= len(char_list):
-        #     return None, None
+    for i in range(id, id + 50):  # 外层循环是字
+        if i >= len(char_list):
+            return train_digit, test_digit
         image_list = []
         for j, verified_font_path in enumerate(verified_font_paths):  # 内层循环是字体
             if rotate == 0:
@@ -358,13 +358,13 @@ def create_char():
     train_digit = {}
     test_digit = {}
     pool = ThreadPoolExecutor(max_workers=100)
-    while Id < 1000:
+    while Id < len(char_list):
         args = [Id, char_list, font2image, verified_font_paths, rotate, all_rotate_angles, test_ratio]
         f = pool.submit(create_img, *args)
         t1, t2 = f.result()
         train_digit.update(t1)
         test_digit.update(t2)
-        Id += 10
+        Id += 50
     #
     # train_photos = np.array(list(train_digit.values()))
     # test_photos = np.array(list(test_digit.values()))

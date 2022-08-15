@@ -9,6 +9,7 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
 
     #1. 装载图片
     origin_image = cv.imdecode(np.fromfile(card_file_path, dtype=np.uint8), -1)
+
     # cv.imshow('origin_image', origin_image)
     # cv.waitKey()
     # cv.destroyAllWindows()
@@ -19,16 +20,15 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
             change_rate = MAX_WIDTH / cols
             sized_image = cv.resize(origin_image ,( MAX_WIDTH ,int(rows * change_rate) ), interpolation = cv.INTER_AREA)
 
-
     # cv.imshow('sized_image', sized_image)
     # cv.waitKey()
     # cv.destroyAllWindows()
-
 
     #3. 完成高斯模糊-预处理
     gaus_blured_image = cv.GaussianBlur(sized_image, (5, 5), 0)
     median_image = cv.medianBlur(gaus_blured_image,5)
     blured_image = cv.bilateralFilter(median_image, 13, 15, 15)
+
     # cv.imshow('blured_image',blured_image)
     # cv.waitKey()
     # cv.destroyAllWindows()
@@ -37,7 +37,6 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
     gray_image = cv.cvtColor(blured_image, cv.COLOR_BGR2GRAY)
     # gray_image = cv.cvtColor(origin_image, cv.COLOR_BGR2GRAY)
 
-
     #4.边缘检测
     canny=cv.Canny(gray_image, 40, 120)##
     # sobel = cv.Sobel(gray_image, cv.CV_8U, 1, 0, ksize=3)
@@ -45,27 +44,21 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
     # cv.waitKey()
     # cv.destroyAllWindows()
 
-
     #5.二值化
-
     is_success, binary_image = cv.threshold(canny, 60, 255, cv.THRESH_OTSU)
     # cv.imshow('binary_image',binary_image)
     # cv.waitKey()
     # cv.destroyAllWindows()
 
-
     #6. 在原图上获取轮廓并绘制
     # 获取所有的轮廓，轮廓边框使用最小模式（1个像素）
-
     contours, _ = cv.findContours(binary_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
-
     draw_image=cv.drawContours(sized_image,contours, -1, (0, 0, 255))
+
     # contours
     # cv.imshow('contours_image', draw_image)
     # cv.waitKey()
     # cv.destroyAllWindows()
-
-
     #7. 基于面积（长宽比）获取卡片区域
     # 声明所有候选|满足条件的区域列表
     candidate_regions = []
@@ -93,9 +86,8 @@ def IDCardLocate(card_file_path,MAX_WIDTH):
     else:
        return candidate_regions
 
-
 MAX_WIDTH = 500 #设置最大宽度
-card_file_path = 'images/IDCard/syx2.jpg'
+card_file_path = 'images/IDCard/syx2.jpg'#传入文件路径
 results = IDCardLocate(card_file_path,MAX_WIDTH)
 
 #8. 逐个显示提取的身份证候选区域

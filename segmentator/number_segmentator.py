@@ -12,12 +12,12 @@ def extract_numbers(image, debug=True):
     top, bottom = max(0, region_vertical[0] - 5), min(image.shape[0], region_vertical[-1] + 5)
     left, right = max(0, region_horizontal[0] - 10), min(image.shape[1], region_horizontal[-1] + 10)
     roi = image[top:bottom, left:right]
-    pixels = np.where(roi < 127)
+    pixels = np.where(roi < 0.75)
     pixels[0][:] = (bottom - top) / 2
     pixels = np.dstack((pixels[0], pixels[1]))[0]
     kmeans = KMeans(init='k-means++', n_clusters=18).fit(pixels)
     centroids = kmeans.cluster_centers_
-    boxes = [(left + int(round(c[1] - 30)), top, left + int(round(c[1] + 30)), bottom) for c in centroids]
+    boxes = [(left + int(round(c[1] - 27)), top, left + int(round(c[1] + 27)), bottom) for c in centroids]
     if debug:
         plt.title('Number Image Horizontal Histogram')
         plt.plot(np.arange(len(hist_horizontal)), hist_horizontal)

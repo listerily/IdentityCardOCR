@@ -52,16 +52,17 @@ class LeNet5(Model):
         )
 
         # checkpoint
-        filepath = "the_best_model.hdf5"
+        filepath = "../saved_models/digit_classifier.hdf5"
         # 中途训练效果提升, 则将文件保存, 每提升一次, 保存一次
         checkpoint = tf.keras.callbacks.ModelCheckpoint(os.path.join('./', filepath), monitor='val_accuracy',
                                                         verbose=1, save_best_only=True, mode='max')
         callbacks_list = [checkpoint]
 
-        self.model.fit(train_data, callbacks=callbacks_list, epochs=self.num_epochs, validation_data=(tf_test_fea, tf_test_lab))
+        self.model.fit(train_data, callbacks=callbacks_list, epochs=self.num_epochs,
+                       validation_data=(tf_test_fea, tf_test_lab))
 
     def saveModel(self):
-        self.model.save("my_h5_model.hdf5", include_optimizer=False, save_format="h5")
+        self.model.save("saved_models/digit_classifier.hdf5", include_optimizer=False, save_format="h5")
 
 
 if __name__ == '__main__':
@@ -93,4 +94,4 @@ if __name__ == '__main__':
     lenet = LeNet5(len(test_digit.keys()))
     lenet.setModel()
     lenet.trainModel(train_dataset, tf_test_feature, tf_test_labels)
-    #lenet.saveModel()
+    # lenet.saveModel()

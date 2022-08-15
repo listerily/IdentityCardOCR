@@ -73,11 +73,3 @@ def crop(image, show=True, write=False, write_directory='.'):
         plt.imshow(image_copy, 'gray')
         plt.show()
     return images
-
-
-if __name__ == '__main__':
-    crop(read_and_preprocess('/home/listerily/test3.png'), show=True, write=True)
-    crop(read_and_preprocess('/home/listerily/test4.png'), show=True, write=True)
-    crop(read_and_preprocess('/home/listerily/test5.png'), show=True, write=True)
-    crop(read_and_preprocess('/home/listerily/test6.jpg'), show=True, write=True)
-    # crop(read_and_preprocess('cards/0.png'), show=True, write=True)

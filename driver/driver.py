@@ -47,8 +47,8 @@ class Driver:
         # address_images = extract_characters(image_address, debug=self.debug)
 
         # Classification
-        digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier.hdf5')
-        digit_results = []
+        digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
+        digit_images = np.zeros((18, 44, 44, 1))
         for i, box in enumerate(number_image_boxes):
             digit_image = image_number[box[1]:box[3], box[0]:box[2]]
             desired_size = max(digit_image.shape[:2])
@@ -58,10 +58,11 @@ class Driver:
                                              math.floor((desired_size - box[2] + box[0]) / 2),
                                              math.ceil((desired_size - box[2] + box[0]) / 2),
                                              cv2.BORDER_CONSTANT, value=1.)
-            digit_image = cv2.resize(digit_image, (44, 44))
-            digit_image = np.array([digit_image])
-            result = digit_classifier.predict(digit_image).argmax()
-            digit_results.append(result)
+            digit_image = cv2.resize(digit_image, (44, 44)) * 255
+            digit_image = digit_image.astype(np.float32)
+            digit_image = np.expand_dims(digit_image, axis=-1)
+            digit_images[i, :, :, :] = np.array([digit_image])
+        digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
         print(digit_results)
 
 

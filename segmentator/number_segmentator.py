@@ -34,4 +34,4 @@ def extract_numbers(image, debug=True):
         plt.scatter(left + centroids[:, 1], top + centroids[:, 0],
                     marker="x", s=50, linewidths=1, color="r", zorder=10)
         plt.show()
-    return boxes
+    return sorted(boxes, key=lambda x: x[0])

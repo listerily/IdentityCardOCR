@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-from PIL import Image
 
 
 def automatic_brightness_and_contrast(image, clip_hist_percent=1):
@@ -39,11 +38,10 @@ def automatic_brightness_and_contrast(image, clip_hist_percent=1):
     return auto_result, alpha, beta
 
 
-def read_and_preprocess(filename):
-    image = cv2.imread(filename)
+def preprocess(image):
     image, alpha, beta = automatic_brightness_and_contrast(image, 4)
     image = np.clip((1.99 * image - 20), 0, 255).astype(np.uint8)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
     image = cv2.erode(image, np.ones((3, 3), np.uint8), iterations=1)
     image = cv2.dilate(image, np.ones((3, 3), np.uint8), iterations=1)
@@ -51,7 +49,7 @@ def read_and_preprocess(filename):
     return image / 255.
 
 
-def crop(image, show=True, write=False, write_directory='.'):
+def crop(image, debug=True):
     roi = [
         ((290, 120), (800, 270), 'name'),
         ((670, 280), (920, 410), 'nationality'),
@@ -62,14 +60,11 @@ def crop(image, show=True, write=False, write_directory='.'):
     for r in roi:
         sub_image = image[r[0][1]:r[1][1], r[0][0]:r[1][0]]
         images.append(sub_image)
-    if write:
-        for r in roi:
-            sub_image = image[r[0][1]:r[1][1], r[0][0]:r[1][0]]
-            Image.fromarray(np.uint8(sub_image.astype(float) * 255)).save(write_directory + '/' + r[2] + '.png')
-    if show:
+    if debug:
         image_copy = np.copy(image)
         for r in roi:
             image_copy = cv2.rectangle(image_copy, r[0], r[1], (0, 0, 0), 2)
+        plt.title('Cropping Boundaries')
         plt.imshow(image_copy, 'gray')
         plt.show()
     return images

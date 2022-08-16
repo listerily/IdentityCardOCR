@@ -6,9 +6,9 @@ import cv2
 def segment_character(image, axis,
                       len_threshold=8,
                       space_density_threshold=4, character_density_threshold=8,
-                      show=False):
-    hist = np.sum(1 - image / 255., axis=axis)
-    if show:
+                      debug=False):
+    hist = np.sum(1 - image, axis=axis)
+    if debug:
         plt.plot(np.arange(len(hist)), hist)
         plt.show()
 
@@ -25,7 +25,7 @@ def segment_character(image, axis,
             boxes.append((character_start_position, i - len_threshold))
     if state == 1:
         boxes.append((character_start_position, len(hist)))
-    if show:
+    if debug:
         image_copy = np.copy(image)
         t = image_copy.shape[axis]
         for box in boxes:
@@ -38,11 +38,11 @@ def segment_character(image, axis,
     return boxes
 
 
-def extract_characters(image, show=False, padding=0, area_threshold=650):
+def extract_characters(image, debug=False, padding=3, area_threshold=650):
     boxes = []
-    v_boxes = segment_character(image, 1, show=show, space_density_threshold=8, character_density_threshold=10)
+    v_boxes = segment_character(image, 1, debug=debug, space_density_threshold=8, character_density_threshold=10)
     for v_box in v_boxes:
-        h_boxes = segment_character(image[v_box[0]:v_box[1], :], 0, show=show)
+        h_boxes = segment_character(image[v_box[0]:v_box[1], :], 0, debug=debug)
         for h_box in h_boxes:
             if (h_box[1] - h_box[0]) * (v_box[1] - v_box[0]) <= area_threshold:
                 continue
@@ -51,18 +51,14 @@ def extract_characters(image, show=False, padding=0, area_threshold=650):
                           min(image.shape[1], h_box[1] + 2 * padding),
                           min(image.shape[0], v_box[1] + 2 * padding)))
 
-    if show:
+    if debug:
         image_copy = np.copy(image)
         for box in boxes:
             image_copy = cv2.rectangle(image_copy,
                                        (box[0], box[1]),
                                        (box[2], box[3]),
                                        (0, 0, 0), 2)
+        plt.title('Text Segmentation Result')
         plt.imshow(image_copy, 'gray')
         plt.show()
     return boxes
-
-
-if __name__ == '__main__':
-    full_image = cv2.imread('address.png', 0)
-    boxes = extract_characters(full_image, show=True, padding=5)

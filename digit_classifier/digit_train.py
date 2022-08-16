@@ -76,20 +76,20 @@ def train_and_save():
     save(model)
 
 
-# def load_and_predict():
-#     model = tf.keras.models.load_model(MODEL_FILEPATH)
-#     for i in range(18):
-#         image = cv2.imread(str(i) + '.png')
-#         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#         image = image.astype(np.float32)
-#         image = np.expand_dims(image, axis=-1)
-#         result = model.predict(np.array([image])).argmax()
-#
-#         plt.title('Prediction Result: ' + str(result))
-#         plt.imshow(image, 'gray')
-#         plt.show()
+def load_and_predict():
+    model = tf.keras.models.load_model(MODEL_FILEPATH)
+    for i in range(18):
+        image = cv2.imread('../' + str(i) + '.png')
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = image.astype(np.float32)
+        image = np.expand_dims(image, axis=-1)
+        result = model.predict(np.array([image])).argmax()
+
+        plt.title('Prediction Result: ' + str(result))
+        plt.imshow(image, 'gray')
+        plt.show()
 
 
 if __name__ == '__main__':
-    train_and_save()
-    # load_and_predict()
+    # train_and_save()
+    load_and_predict()

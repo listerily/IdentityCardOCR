@@ -1,387 +1,120 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
-import sys
-from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Pool
-
 from PIL import Image, ImageFont, ImageDraw
-import argparse
-from argparse import RawTextHelpFormatter
-import csv
-import os
 import cv2
 import random
 import numpy as np
-import shutil
-import traceback
-import copy
+import pandas as pd
+import matplotlib.pyplot as plt
+# 设置显示中文字体
+plt.rcParams["font.sans-serif"] = ['SimHei']
 
 
-class dataAugmentation(object):
+class DataAugmentation:
     def __init__(self, noise=True, dilate=True, erode=True):
         self.noise = noise
         self.dilate = dilate
         self.erode = erode
 
-    @classmethod
-    def add_noise(cls, img):
-        for i in range(20):  # 噪声
+    def add_salt_noise(self, img):
+        for i in range(random.randint(20, 25)):  # 噪声
             temp_x = np.random.randint(0, img.shape[0])
             temp_y = np.random.randint(0, img.shape[1])
-            img[temp_x, temp_y] = 255
+            img[temp_x, temp_y] = random.randint(50, 200)
         return img
 
-    @classmethod
-    def add_erode(cls, img):  # 腐蚀
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-        img = cv2.erode(img, kernel)
+    def add_gaussian_noise(self, img):
+        noise = np.random.normal(0, 1, img.shape) * random.randint(1, 5)
+        return img + noise
+
+    def add_erode(self, img):  # 腐蚀
+        img = cv2.erode(img, np.ones((3, 3)))
         return img
 
-    @classmethod
-    def add_dilate(cls, img):  # 膨胀
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-        img = cv2.dilate(img, kernel)
+    def add_dilate(self, img):  # 膨胀
+        img = cv2.dilate(img, np.ones((3, 3)))
         return img
 
-    def do(self, img_list=[]):
-        aug_list = copy.deepcopy(img_list)
-        for i in range(len(img_list)):
-            im = img_list[i]
-            if self.noise and random.random() < 0.5:
-                im = self.add_noise(im)
-            if self.dilate and random.random() < 0.5:
-                im = self.add_dilate(im)
-            elif self.erode:
-                im = self.add_erode(im)
-            aug_list.append(im)
-        return aug_list
+    def make_brighter(self, img):
+        img = img + np.random.randint(20, 40, img.shape) * 1.
+        return np.clip(img, 0, 255)
 
-
-class FindImageBBox(object):
-    def __init__(self, ):
-        pass
+    def make_spots(self, img):
+        origin_img = img
+        for i in range(random.randint(1, 3)):
+            temp_x = np.random.randint(0, img.shape[0])
+            temp_y = np.random.randint(0, img.shape[1])
+            img = cv2.circle(img, (temp_x, temp_y), 3, 230, -1)
+            img = cv2.addWeighted(img, 0.5, origin_img, 0.5, 0)
+        return np.clip(img, 0, 255)
 
     def do(self, img):
-        height = img.shape[0]
-        width = img.shape[1]
-        v_sum = np.sum(img, axis=0)
-        h_sum = np.sum(img, axis=1)
-        left = 0
-        right = width - 1
-        top = 0
-        low = height - 1
-        # 从左往右扫描，遇到非零像素点就以此为字体的左边界
-        for i in range(width):
-            if v_sum[i] > 0:
-                left = i
-                break
-        # 从右往左扫描，遇到非零像素点就以此为字体的右边界
-        for i in range(width - 1, -1, -1):
-            if v_sum[i] > 0:
-                right = i
-                break
-        # 从上往下扫描，遇到非零像素点就以此为字体的上边界
-        for i in range(height):
-            if h_sum[i] > 0:
-                top = i
-                break
-        # 从下往上扫描，遇到非零像素点就以此为字体的下边界
-        for i in range(height - 1, -1, -1):
-            if h_sum[i] > 0:
-                low = i
-                break
-        return (left, top, right, low)
-
-
-# 把字体图像放到背景图像中
-class PreprocessResizeKeepRatioFillBG(object):
-
-    def __init__(self, width, height,
-                 fill_bg=False,
-                 auto_avoid_fill_bg=True,
-                 margin=None):
-        self.width = width
-        self.height = height
-        self.fill_bg = fill_bg
-        self.auto_avoid_fill_bg = auto_avoid_fill_bg
-        self.margin = margin
-
-    @classmethod
-    def is_need_fill_bg(cls, cv2_img, th=0.5, max_val=255):
-        image_shape = cv2_img.shape
-        height, width = image_shape
-        if height * 3 < width:
-            return True
-        if width * 3 < height:
-            return True
-        return False
-
-    @classmethod
-    def put_img_into_center(cls, img_large, img_small):
-        width_large = img_large.shape[1]
-        height_large = img_large.shape[0]
-
-        width_small = img_small.shape[1]
-        height_small = img_small.shape[0]
-
-        if width_large < width_small:
-            raise ValueError("width_large <= width_small")
-        if height_large < height_small:
-            raise ValueError("height_large <= height_small")
-
-        start_width = (width_large - width_small) // 2
-        start_height = (height_large - height_small) // 2
-
-        img_large[start_height:start_height + height_small,
-        start_width:start_width + width_small] = img_small
-        return img_large
-
-    def do(self, cv2_img):
-        # 确定有效字体区域，原图减去边缘长度就是字体的区域
-        if self.margin is not None:
-            width_minus_margin = max(2, self.width - self.margin)
-            height_minus_margin = max(2, self.height - self.margin)
-        else:
-            width_minus_margin = self.width
-            height_minus_margin = self.height
-
-        if len(cv2_img.shape) > 2:
-            pix_dim = cv2_img.shape[2]
-        else:
-            pix_dim = None
-
-        if self.auto_avoid_fill_bg:
-            need_fill_bg = self.is_need_fill_bg(cv2_img)
-            if not need_fill_bg:
-                self.fill_bg = False
+        img = cv2.blur(img, (3, 3))
+        if random.random() < 0.8:
+            if self.dilate and random.random() < 0.5:
+                img = self.add_dilate(img)
             else:
-                self.fill_bg = True
-
-        # should skip horizontal stroke
-        if not self.fill_bg:
-            ret_img = cv2.resize(cv2_img, (width_minus_margin,
-                                           height_minus_margin))
-        else:
-            if pix_dim is not None:
-                norm_img = np.zeros((height_minus_margin,
-                                     width_minus_margin,
-                                     pix_dim),
-                                    np.uint8)
-            else:
-                norm_img = np.zeros((height_minus_margin,
-                                     width_minus_margin),
-                                    np.uint8)
-            # 将缩放后的字体图像置于背景图像中央
-            ret_img = self.put_img_into_center(norm_img, cv2_img)
-
-        if self.margin is not None:
-            if pix_dim is not None:
-                norm_img = np.zeros((self.height,
-                                     self.width,
-                                     pix_dim),
-                                    np.uint8)
-            else:
-                norm_img = np.zeros((self.height,
-                                     self.width),
-                                    np.uint8)
-            ret_img = self.put_img_into_center(norm_img, ret_img)
-        return ret_img
+                img = self.add_erode(img)
+        if random.random() < 0.5:
+            img = self.add_gaussian_noise(img)
+        if random.random() < 0.5:
+            img = self.add_salt_noise(img)
+            img = cv2.blur(img, (3, 3))
+        if random.random() < 0.5:
+            img = self.make_brighter(img)
+        if random.random() < 0.5:
+            img = self.make_spots(img)
+            img = cv2.blur(img, (3, 3))
+        return img
 
 
-# 检查字体文件是否可用
-class FontCheck(object):
+class DataGenerator:
+    def __init__(self, character_filepath, font_filepath_set,
+                 image_size=(44, 44), text_offset=(5, 1), font_size=range(25, 38),
+                 debug=False):
+        self.debug = debug
 
-    def __init__(self, lang_chars, width=46, height=46):
-        self.lang_chars = lang_chars
-        self.width = width
-        self.height = height
+        df = pd.read_csv(character_filepath, encoding='utf-8')
+        self.character_set = df['Character'].tolist()
+        self.character_len = len(self.character_set)
+        self.fonts = []
+        for font_filepath in font_filepath_set:
+            for f_size in font_size:
+                font = ImageFont.truetype(font_filepath, f_size)
+                self.fonts.append(font)
+        self.text_offset = text_offset
+        self.image_size = image_size
 
-    def do(self, font_path):
-        width = self.width
-        height = self.height
-        try:
-            for i in range(len(self.lang_chars)):
-                # 白色背景
-                img = Image.new("RGB", (width, height), (0, 0, 0))
-                draw = ImageDraw.Draw(img)
-                font = ImageFont.truetype(font_path, int(width * 0.9))
-                # 黑色字体
-                draw.text((0, 0), self.lang_chars[i], 255,
-                          font=font)
-                data = list(img.getdata())
-                sum_val = 0
-                for i_data in data:
-                    sum_val += sum(i_data)
-                if sum_val < 2:
-                    return False
-        except:
-            print("fail to load:%s" % font_path)
-            traceback.print_exc(file=sys.stdout)
-            return False
-        return True
+    def generate(self, num, seed=None):
+        if seed is not None:
+            random.seed(seed)
 
+        augmentation = DataAugmentation()
+        all_num = num * self.character_len
+        x = np.zeros((all_num, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
+        y = np.zeros((all_num,), dtype=np.uint8)
+        for i in range(0, all_num, self.character_len):
+            for j in range(self.character_len):
+                y[i + j] = j
+                char = self.character_set[j]
+                font = random.choice(self.fonts)
+                random_offset = self.text_offset[0] + random.randint(-3, 3), self.text_offset[1] + random.randint(-3, 3)
 
-# 生成字体图像
-class Font2Image(object):
+                image = Image.new('L', self.image_size)
+                d = ImageDraw.Draw(image)
+                d.text(random_offset, char, font=font, fill=255)
+                image = image.rotate(random.random() * 10 * random.choice([-1, 1]), expand=False)
+                image = np.array(image)
 
-    def __init__(self, width, height, need_crop, margin):
-        self.width = width
-        self.height = height
-        self.need_crop = need_crop
-        self.margin = margin
-
-    def do(self, font_path, char, rotate=0):
-        find_image_bbox = FindImageBBox()
-        # 白色背景
-        img = Image.new("RGB", (self.width, self.height), 0)
-        draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype(font_path, int(self.width * 0.8))
-        # 黑色字体
-        draw.text((0, 0), char, 255, font=font)
-        if np.random.randint(0, 2):
-            for j in range(3):  # 条纹
-                temp_x = np.random.randint(6, img.width - 6)
-                temp_y = np.random.randint(6, img.height - 6)
-                temp_a = np.random.choice((-1, 1))
-                shape = [(temp_x, temp_y), (temp_x + 4 * temp_a, temp_y + 4 * temp_a)]
-                draw.line(shape, fill="white", width=0)
-        if rotate != 0:
-            img = img.rotate(rotate)
-        data = list(img.getdata())
-        sum_val = 0
-        for i_data in data:
-            sum_val += sum(i_data)
-        if sum_val > 2:
-            np_img = np.asarray(data, dtype='uint8')
-            np_img = np_img[:, 0]
-            np_img = np_img.reshape((self.height, self.width))
-            cropped_box = find_image_bbox.do(np_img)
-            left, upper, right, lower = cropped_box
-            np_img = np_img[upper: lower + 1, left: right + 1]
-            if not self.need_crop:
-                preprocess_resize_keep_ratio_fill_bg = \
-                    PreprocessResizeKeepRatioFillBG(self.width, self.height,
-                                                    fill_bg=False,
-                                                    margin=self.margin)
-                np_img = preprocess_resize_keep_ratio_fill_bg.do(
-                    np_img)
-            return np_img
-        else:
-            print("img doesn't exist.")
+                image = 255 - image
+                image = augmentation.do(image)
+                image = image.astype(np.float32)
+                if self.debug:
+                    plt.title('Label: ' + char + ', Index: ' + str(j))
+                    plt.imshow(image, 'gray')
+                    plt.show()
+                x[i + j, :, :, :] = np.expand_dims(image, axis=-1)
+        return x, y
 
 
-def get_label_dict():
-    filename = './Chinese_labels.csv'
-    label_dict = []
-    with open(filename, 'r', encoding='UTF-8') as csvfile:
-        csv_reader = csv.reader(csvfile)  # 使用csv.reader读取csvfile中的文件
-        for row in csv_reader:  # 将csv 文件中的数据保存到data中
-            label_dict.append(row[10])  # 选择某一列加入到data数组中
-    return label_dict
-
-
-def create_img(id, char_list, font2image, verified_font_paths, rotate, all_rotate_angles, test_ratio):
-    test_digit = {}
-    train_digit = {}
-    for i in range(id, id + 50):  # 外层循环是字
-        if i >= len(char_list):
-            return train_digit, test_digit
-        image_list = []
-        for j, verified_font_path in enumerate(verified_font_paths):  # 内层循环是字体
-            if rotate == 0:
-                image = font2image.do(verified_font_path, char_list[i])
-                image_list.append(image)
-            else:
-                for k in all_rotate_angles:
-                    image = font2image.do(verified_font_path, char_list[i], rotate=k)
-                    image_list.append(image)
-
-        data_aug = dataAugmentation()
-        image_list = data_aug.do(image_list)
-
-        test_num = int(len(image_list) * test_ratio)
-        random.shuffle(image_list)  # 图像列表打乱
-        for j in range(len(image_list)):
-            image_list[j] = 255 - image_list[j]
-
-        t1 = image_list[:test_num]
-        t2 = image_list[test_num:]
-        test_digit[char_list[i]] = t1
-        train_digit[char_list[i]] = t2
-        print(i)
-    return train_digit, test_digit
-
-
-def create_char():
-# if __name__ == '__main__':
-    font_dir = os.path.expanduser('./chinese_fonts')
-    test_ratio = 0.2
-    width = 44
-    height = 44
-    need_crop = False
-    margin = 0
-    rotate = 15
-    rotate_step = 1
-
-    # 将汉字的label读入，得到（ID：汉字）的映射表label_dict
-    char_list = get_label_dict()
-
-    char_list = char_list[2:]
-    for i in range(len(char_list)):
-        print(i, char_list[i])
-
-    font_check = FontCheck(char_list)
-
-    rotate = abs(rotate)
-    all_rotate_angles = []
-    if 0 < rotate <= 30:
-        for i in range(0, rotate + 1, rotate_step):
-            all_rotate_angles.append(i)
-        for i in range(-rotate, 0, rotate_step):
-            all_rotate_angles.append(i)
-
-    # 对于每类字体进行小批量测试
-    verified_font_paths = []
-    # search for file fonts
-    for font_name in os.listdir(font_dir):
-        path_font_file = os.path.join(font_dir, font_name)
-        if font_check.do(path_font_file):
-            verified_font_paths.append(path_font_file)
-            verified_font_paths.append(path_font_file)
-
-    font2image = Font2Image(width, height, need_crop, margin)
-
-    Id = 0
-    train_digit = {}
-    test_digit = {}
-    pool = ThreadPoolExecutor(max_workers=100)
-    while Id < len(char_list):
-        args = [Id, char_list, font2image, verified_font_paths, rotate, all_rotate_angles, test_ratio]
-        f = pool.submit(create_img, *args)
-        t1, t2 = f.result()
-        train_digit.update(t1)
-        test_digit.update(t2)
-        Id += 50
-    #
-    # train_photos = np.array(list(train_digit.values()))
-    # test_photos = np.array(list(test_digit.values()))
-    # for i in range(train_photos.shape[0]):
-    #     for j in range(train_photos.shape[1]):
-    #         char_dir = os.path.join(train_images_dir, "%0.5d" % i)
-    #
-    #         if not os.path.isdir(char_dir):
-    #             os.makedirs(char_dir)
-    #         path_image = os.path.join(char_dir, "%d.png" % j)
-    #         cv2.imwrite(path_image, train_photos[i][j])
-    #     for j in range(test_photos.shape[1]):
-    #         char_dir = os.path.join(test_images_dir, "%0.5d" % i)
-    #
-    #         if not os.path.isdir(char_dir):
-    #             os.makedirs(char_dir)
-    #         path_image = os.path.join(char_dir, "%d.png" % j)
-    #         cv2.imwrite(path_image, test_photos[i][j])
-    print('done')
-    return train_digit, test_digit
+if __name__ == '__main__':
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'], debug=True)
+    generator.generate(2)

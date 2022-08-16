@@ -1,39 +1,24 @@
-import os
-import sys
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from keras.layers import *
-import chinese_char
+from chinese_char import DataGenerator
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
+EPOCHS = 20
+LEARNING_RATE = 0.001
+MODEL_FILEPATH = './chinese_classifier'
 
 
-# 2. 生成 dataset
-def dealing(image):
-    image_scale = []
-    for img in image:
-        image_resized = tf.image.convert_image_dtype(img, dtype=tf.float32)
-        im = image_resized / 255.0
-        image_scale.append(im)
-    return image_scale
-
-
-# 3. 生成cnn网络，完成训练
-class Model:
-    def __init__(self):
-        self.num_epochs = 1000
-        self.learning_rate = 0.001
-        self.input_shape = (44, 44, 1)
+class VGG(tf.keras.Model):
+    def __init__(self, num_classes, name=None):
+        super().__init__(name=name)
+        self.num_classes = num_classes
         self.model = tf.keras.Sequential()
 
-
-class MyModel(Model):
-    def __init__(self, num):
-        super().__init__()
-        self.num_classes = num
-
     def setModel(self):
-        self.model.add(Conv2D(128, (3, 3), input_shape=self.input_shape))
+        self.model.add(Conv2D(128, (3, 3), input_shape=(44, 44, 1)))
         self.model.add(BatchNormalization(axis=-1))
         self.model.add(Activation('relu'))
         self.model.add(Conv2D(64, (3, 3)))
@@ -59,57 +44,97 @@ class MyModel(Model):
         self.model.add(Dense(self.num_classes))
 
         self.model.add(Activation('softmax'))
+        return self.model
 
-    def trainModel(self, train_data, tf_test_fea, tf_test_lab):
-        self.model.summary()
 
-        self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
-            loss=tf.keras.losses.sparse_categorical_crossentropy,
-            metrics=['accuracy']
-        )
+def generate_dataset(generator, num):
+    data, label = generator.generate(num)
+    dataset = tf.data.Dataset.from_tensor_slices((data, label))
+    dataset = dataset.shuffle(buffer_size=200000)
+    dataset = dataset.batch(batch_size=64)
+    return dataset.prefetch(AUTOTUNE)
 
-        # checkpoint
-        filepath = "the_best_model_plus.hdf5"
-        # 中途训练效果提升, 则将文件保存, 每提升一次, 保存一次
-        checkpoint = tf.keras.callbacks.ModelCheckpoint(os.path.join('./', filepath), monitor='val_accuracy',
-                                                        verbose=1, save_best_only=True, mode='max')
-        callbacks_list = [checkpoint]
 
-        self.model.fit(train_data, callbacks=callbacks_list, epochs=self.num_epochs,
-                       validation_data=(tf_test_fea, tf_test_lab))
+def train(model, train_dataset):
+    print('Training')
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
+        loss=tf.keras.losses.sparse_categorical_crossentropy,
+        metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
+    )
 
-    def saveModel(self):
-        self.model.save("my_h5_model.hdf5", include_optimizer=False, save_format="h5")
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='sparse_categorical_accuracy',
+                                                  min_delta=0, patience=4, mode='max',
+                                                  verbose=1, restore_best_weights=True)
+    callbacks_list = [early_stop]
+
+    model.fit(train_dataset, callbacks=callbacks_list, epochs=EPOCHS)
+
+
+def evaluate(model, test_dataset):
+    print('Evaluating')
+    (loss, acc, a) = model.evaluate(test_dataset)
+    print(loss, acc, a)
+
+
+def save(model):
+    model.save(MODEL_FILEPATH, save_format="tf")
+
+
+def train_and_save():
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
+    m = VGG(4945, name='VGG')
+    m.setModel()
+    model = m.model
+    train_dataset = generate_dataset(generator, 15)
+    test_dataset = generate_dataset(generator, 5)
+    train(model, train_dataset)
+    evaluate(model, test_dataset)
+    save(model)
+
+
+def continue_train():
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
+    model = tf.keras.models.load_model(MODEL_FILEPATH)
+    train_dataset = generate_dataset(generator, 15)
+    test_dataset = generate_dataset(generator, 5)
+    train(model, train_dataset)
+    evaluate(model, test_dataset)
+    save(model)
+
+def load_and_predict():
+    model = tf.keras.models.load_model(MODEL_FILEPATH)
+
+    for i in range(18):
+        image = cv2.imread('./digits/%d.png' % i)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = image.astype(np.float32)
+        # image = np.round(image)
+        image = np.expand_dims(image, axis=-1)
+        result = model.predict(np.array([image])).argmax()
+
+        plt.title('Prediction Result: ' + str(result))
+        plt.imshow(image, 'gray')
+        plt.show()
+
+
+def predict_some():
+    model = tf.keras.models.load_model(MODEL_FILEPATH)
+    generator = DataGenerator('digit.csv', ['OCR-B 10 BT.ttf'])
+    data, label = generator.generate(20)
+
+    print(data.shape)
+    for image in data:
+        result = model.predict(np.array([image])).argmax()
+
+        plt.title('Prediction Result: ' + str(result))
+        plt.imshow(image, 'gray')
+        plt.show()
 
 
 if __name__ == '__main__':
-    train_digit, test_digit = chinese_char.create_char()
-
-    train_photos = np.array(list(train_digit.values())).reshape((-1, 44, 44))
-    train_name_index = dict((name, index) for index, name in enumerate(train_digit.keys()))
-    t1 = [train_name_index[name] for name in train_digit.keys()] * 100
-    t1.sort()
-    train_labels = np.array(t1)
-
-    test_photos = np.array(list(test_digit.values())).reshape((-1, 44, 44))
-    test_name_index = dict((name, index) for index, name in enumerate(test_digit.keys()))
-    t2 = [test_name_index[name] for name in test_digit.keys()] * 24
-    t2.sort()
-    test_labels = np.array(t2)
-
-    tf_train_photos = tf.convert_to_tensor(dealing(train_photos))
-    tf_train_labels = tf.convert_to_tensor(train_labels)
-    train_dataset = tf.data.Dataset.from_tensor_slices((tf_train_photos, tf_train_labels))
-
-    tf_test_feature = tf.convert_to_tensor(dealing(test_photos))
-    tf_test_labels = tf.convert_to_tensor(test_labels)
-
-    train_dataset = train_dataset.shuffle(buffer_size=1000000)
-    train_dataset = train_dataset.batch(batch_size=64)
-    train_dataset = train_dataset.prefetch(AUTOTUNE)
-
-    mm = MyModel(len(test_digit.keys()))
-    mm.setModel()
-    mm.trainModel(train_dataset, tf_test_feature, tf_test_labels)
-    #lenet.saveModel()
+    train_and_save()
+    for i in range(15):
+        continue_train()
+    # load_and_predict()
+    # predict_some()

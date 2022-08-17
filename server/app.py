@@ -30,6 +30,12 @@ def get_results():
         f.save('/var/www/uploads/uploaded_img.jpg')
         #获得结果集results
         results = Driver('/var/www/uploads/uploaded_img.jpg',True)
+        # results = {
+        #     'name': 'image_name',
+        #     'nationality': 'image_nationality',
+        #     'address': 'image_address',
+        #     'number': 'image_number'
+        # }
         # 显示结果页面
         return render_template('result.html',**results)
 

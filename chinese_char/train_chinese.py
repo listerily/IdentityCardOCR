@@ -1,14 +1,15 @@
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import pandas as pd
 from keras.layers import *
 from chinese_char import DataGenerator
+plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-EPOCHS = 20
+EPOCHS = 5
 LEARNING_RATE = 0.001
-MODEL_FILEPATH = './chinese_classifier'
+MODEL_FILEPATH = '../saved_models/chinese_classifier'
 
 
 class VGG(tf.keras.Model):
@@ -82,8 +83,8 @@ def save(model):
 
 
 def train_and_save():
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
-    m = VGG(4945, name='VGG')
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    m = VGG(4956, name='VGG')
     m.setModel()
     model = m.model
     train_dataset = generate_dataset(generator, 15)
@@ -94,7 +95,7 @@ def train_and_save():
 
 
 def continue_train():
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
     model = tf.keras.models.load_model(MODEL_FILEPATH)
     train_dataset = generate_dataset(generator, 15)
     test_dataset = generate_dataset(generator, 5)
@@ -102,39 +103,44 @@ def continue_train():
     evaluate(model, test_dataset)
     save(model)
 
-def load_and_predict():
-    model = tf.keras.models.load_model(MODEL_FILEPATH)
-
-    for i in range(18):
-        image = cv2.imread('./digits/%d.png' % i)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        image = image.astype(np.float32)
-        # image = np.round(image)
-        image = np.expand_dims(image, axis=-1)
-        result = model.predict(np.array([image])).argmax()
-
-        plt.title('Prediction Result: ' + str(result))
-        plt.imshow(image, 'gray')
-        plt.show()
+# def load_and_predict():
+#     model = tf.keras.models.load_model(MODEL_FILEPATH)
+#
+#     for i in range(18):
+#         image = cv2.imread('./digits/%d.png' % i)
+#         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#         image = image.astype(np.float32)
+#         # image = np.round(image)
+#         image = np.expand_dims(image, axis=-1)
+#         result = model.predict(np.array([image])).argmax()
+#
+#         plt.title('Prediction Result: ' + str(result))
+#         plt.imshow(image, 'gray')
+#         plt.show()
 
 
 def predict_some():
     model = tf.keras.models.load_model(MODEL_FILEPATH)
-    generator = DataGenerator('digit.csv', ['OCR-B 10 BT.ttf'])
-    data, label = generator.generate(20)
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    data, label = generator.generate(2)
 
     print(data.shape)
+    print(label.shape)
+    print(label)
     for image in data:
         result = model.predict(np.array([image])).argmax()
+        r = character_set[result]
 
-        plt.title('Prediction Result: ' + str(result))
+        plt.title('Prediction Result: ' + str(1))
         plt.imshow(image, 'gray')
         plt.show()
 
 
 if __name__ == '__main__':
+    df = pd.read_csv('Chinese_labels.csv', encoding='utf-8')
+    character_set = df['Character'].tolist()
     train_and_save()
-    for i in range(15):
+    for i in range(60):
         continue_train()
     # load_and_predict()
     # predict_some()

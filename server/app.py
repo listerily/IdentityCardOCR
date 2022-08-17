@@ -1,5 +1,8 @@
-from flask import Flask, request, render_template
+import cv2
+import numpy as np
+from flask import Flask, request
 from driver.driver import Driver
+import base64
 
 app = Flask(__name__)
 
@@ -11,25 +14,21 @@ def cors(environ):
     environ.headers['Access-Contorl-Allow-Headers'] = 'x-requested=with,content-type'
     return environ
 
-@app.route('/')
-def hello_world():  # put application's code here
 
-    return 'Hello World!'
-
-
-@app.route('/upload_img', methods=['POST', 'GET'], strict_slashes=False)
-def upload_img():
-    return render_template('upload_img.html',)
-
-
-@app.route('/result', methods=['POST','GET'], strict_slashes=False)
-def get_results():
+@app.route('/', methods=['POST','GET'], strict_slashes=False)
+def index():
     if request.method == 'POST':
-        f = request.files['image']
-        print(f)
-        f.save('/var/www/uploads/uploaded_img.jpg')
-        #获得结果集results
-        results = Driver('/var/www/uploads/uploaded_img.jpg',True)
+
+        img_str = request.form['image']
+        img_byte = base64.b64decode(img_str)
+        image = np.fromstring(img_byte, np.uint8)
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        #print(f)
+        # f.save('/var/www/uploads/uploaded_img.jpg')
+        return '上传成功'
+
+    if request.method == 'GET':
+        results = Driver(image,True)
         # results = {
         #     'name': 'image_name',
         #     'nationality': 'image_nationality',
@@ -37,7 +36,7 @@ def get_results():
         #     'number': 'image_number'
         # }
         # 显示结果页面
-        return render_template('result.html',**results)
+        return results
 
 
 

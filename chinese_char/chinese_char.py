@@ -34,7 +34,7 @@ class DataAugmentation:
         return img
 
     def make_brighter(self, img):
-        img = img + np.random.randint(20, 40, img.shape) * 1.
+        img = img + np.random.randint(25, 35, img.shape) * 1.
         return np.clip(img, 0, 255)
 
     def make_spots(self, img):
@@ -68,7 +68,7 @@ class DataAugmentation:
 
 class DataGenerator:
     def __init__(self, character_filepath, font_filepath_set,
-                 image_size=(44, 44), text_offset=(5, 1), font_size=range(25, 38),
+                 image_size=(44, 44), text_offset=(5, 1), font_size=[range(25, 38), range(35, 50)],
                  debug=False):
         self.debug = debug
 
@@ -76,8 +76,9 @@ class DataGenerator:
         self.character_set = df['Character'].tolist()
         self.character_len = len(self.character_set)
         self.fonts = []
-        for font_filepath in font_filepath_set:
-            for f_size in font_size:
+        for i in range(2):
+            font_filepath = font_filepath_set[i]
+            for f_size in font_size[i]:
                 font = ImageFont.truetype(font_filepath, f_size)
                 self.fonts.append(font)
         self.text_offset = text_offset
@@ -93,10 +94,12 @@ class DataGenerator:
         y = np.zeros((all_num,), dtype=np.uint8)
         for i in range(0, all_num, self.character_len):
             for j in range(self.character_len):
+                font = self.fonts[random.randint(0, 12)]
+                if j >= 4945:
+                    font = self.fonts[random.randint(10, 25)]
                 y[i + j] = j
                 char = self.character_set[j]
-                font = random.choice(self.fonts)
-                random_offset = self.text_offset[0] + random.randint(-3, 3), self.text_offset[1] + random.randint(-3, 3)
+                random_offset = self.text_offset[0] + random.randint(-5, 5), self.text_offset[1] + random.randint(-5, 5)
 
                 image = Image.new('L', self.image_size)
                 d = ImageDraw.Draw(image)
@@ -107,7 +110,7 @@ class DataGenerator:
                 image = 255 - image
                 image = augmentation.do(image)
                 image = image.astype(np.float32)
-                if self.debug:
+                if self.debug and j>=4945:
                     plt.title('Label: ' + char + ', Index: ' + str(j))
                     plt.imshow(image, 'gray')
                     plt.show()
@@ -116,5 +119,5 @@ class DataGenerator:
 
 
 if __name__ == '__main__':
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'], debug=True)
-    generator.generate(2)
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'], debug=True)
+    generator.generate(1)

@@ -37,13 +37,20 @@ class Driver:
             plt.show()
 
         image_name, image_nationality, image_address, image_number = crop(preprocess_result, debug=self.debug)
+
         # Number Segmentation
         image_number = cv2.morphologyEx(image_number, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
         number_image_boxes = extract_numbers(image_number, debug=self.debug)
+
         # Text Segmentation
-        # name_images = extract_characters(image_name, debug=self.debug)
-        # nationality_images = extract_characters(image_nationality, debug=self.debug)
-        # address_images = extract_characters(image_address, debug=self.debug)
+        image_name=cv2.morphologyEx(image_name, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        name_images_boxes = extract_characters(image_name, debug=self.debug)
+
+        image_nationality=cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        nationality_images_boxes = extract_characters(image_nationality, debug=self.debug)
+
+        image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        address_images_boxes = extract_characters(image_address, debug=self.debug)
 
         # Digit Classification
         digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')

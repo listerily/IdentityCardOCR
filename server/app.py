@@ -29,16 +29,17 @@ def get_results():
         print(f)
         f.save('/var/www/uploads/uploaded_img.jpg')
 
+        #Driver图片处理
+        #获得结果集results
         results = {
             'image_name': 'image_name',
             'image_nationality': 'image_nationality',
             'image_address': 'image_address',
             'image_number': 'image_number'
         }
+        
         # 显示结果页面
         return render_template('result.html',**results)
-
-
 
 
 

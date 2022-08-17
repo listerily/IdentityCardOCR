@@ -44,13 +44,13 @@ class Driver:
 
         # Text Segmentation
         image_name=cv2.morphologyEx(image_name, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
-        name_images_boxes = extract_characters(image_name, debug=self.debug)
+        name_image_boxes = extract_characters(image_name, debug=self.debug)
 
         image_nationality=cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
-        nationality_images_boxes = extract_characters(image_nationality, debug=self.debug)
+        nationality_image_boxes = extract_characters(image_nationality, debug=self.debug)
 
         image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
-        address_images_boxes = extract_characters(image_address, debug=self.debug)
+        address_image_boxes = extract_characters(image_address, debug=self.debug)
 
         # Digit Classification
         digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
@@ -71,9 +71,60 @@ class Driver:
         digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
         print(digit_results)
 
-        #Chinese Character Classification
+        # Classification
         chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
-        chinese_images=np.
+
+        name_images = np.zeros((18, 44, 44, 1))
+        for i, box in enumerate(name_image_boxes):
+            name_image = image_name[box[1]:box[3], box[0]:box[2]]
+            desired_size = max(name_image.shape[:2])
+            name_image = cv2.copyMakeBorder(name_image,
+                                             math.floor((desired_size - box[3] + box[1]) / 2),
+                                             math.ceil((desired_size - box[3] + box[1]) / 2),
+                                             math.floor((desired_size - box[2] + box[0]) / 2),
+                                             math.ceil((desired_size - box[2] + box[0]) / 2),
+                                             cv2.BORDER_CONSTANT, value=1.)
+            name_image = cv2.resize(name_image, (44, 44)) * 255
+            name_image = name_image.astype(np.float32)
+            name_image = np.expand_dims(name_image, axis=-1)
+            name_images[i, :, :, :] = np.array([name_image])
+        name_results = digit_classifier.predict(name_images).argmax(axis=1)
+        print(name_results)
+
+        nationality_images = np.zeros((18, 44, 44, 1))
+        for i, box in enumerate(nationality_image_boxes):
+            nationality_image = image_nationality[box[1]:box[3], box[0]:box[2]]
+            desired_size = max(nationality_image.shape[:2])
+            nationality_image = cv2.copyMakeBorder(nationality_image,
+                                             math.floor((desired_size - box[3] + box[1]) / 2),
+                                             math.ceil((desired_size - box[3] + box[1]) / 2),
+                                             math.floor((desired_size - box[2] + box[0]) / 2),
+                                             math.ceil((desired_size - box[2] + box[0]) / 2),
+                                             cv2.BORDER_CONSTANT, value=1.)
+            nationality_image = cv2.resize(nationality_image, (44, 44)) * 255
+            nationality_image = nationality_image.astype(np.float32)
+            nationality_image = np.expand_dims(nationality_image, axis=-1)
+            nationality_images[i, :, :, :] = np.array([nationality_image])
+        nationality_results = digit_classifier.predict(nationality_images).argmax(axis=1)
+        print(nationality_results)
+
+        address_images = np.zeros((18, 44, 44, 1))
+        for i, box in enumerate(address_image_boxes):
+            address_image = image_address[box[1]:box[3], box[0]:box[2]]
+            desired_size = max(address_image.shape[:2])
+            address_image = cv2.copyMakeBorder(address_image,
+                                             math.floor((desired_size - box[3] + box[1]) / 2),
+                                             math.ceil((desired_size - box[3] + box[1]) / 2),
+                                             math.floor((desired_size - box[2] + box[0]) / 2),
+                                             math.ceil((desired_size - box[2] + box[0]) / 2),
+                                             cv2.BORDER_CONSTANT, value=1.)
+            address_image = cv2.resize(address_image, (44, 44)) * 255
+            address_image = address_image.astype(np.float32)
+            address_image = np.expand_dims(address_image, axis=-1)
+            address_images[i, :, :, :] = np.array([address_image])
+        address_results = digit_classifier.predict(address_images).argmax(axis=1)
+        print(address_results)
+
 
 if __name__ == '__main__':
     Driver('/home/listerily/IDCard/syx6.jpg', debug=True).run()

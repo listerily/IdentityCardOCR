@@ -15,44 +15,79 @@ MODEL_FILEPATH = '../saved_models/chinese_classifier'
 class VGG(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
-        self.num_classes = num_classes
-        self.model = tf.keras.Sequential()
 
-    def setModel(self):
-        self.model.add(Conv2D(128, (3, 3), input_shape=(44, 44, 1)))
-        self.model.add(BatchNormalization(axis=-1))
-        self.model.add(Activation('relu'))
-        self.model.add(Conv2D(64, (3, 3)))
-        self.model.add(BatchNormalization(axis=-1))
-        self.model.add(Activation('relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.conv1a = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
+        self.conv1b = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same')
+        self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
-        self.model.add(Conv2D(64, (3, 3)))
-        self.model.add(BatchNormalization(axis=-1))
-        self.model.add(Activation('relu'))
-        self.model.add(Conv2D(64, (3, 3)))
-        self.model.add(BatchNormalization(axis=-1))
-        self.model.add(Activation('relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        self.conv2a = tf.keras.layers.Conv2D(128, kernel_size=3, activation='relu', padding='same')
+        self.conv2b = tf.keras.layers.Conv2D(128, kernel_size=3, activation='relu', padding='same')
+        self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
-        self.model.add(Flatten())
+        self.conv3a = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.conv3b = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.conv3c = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.conv3d = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
-        # Fully connected layer
-        self.model.add(Dense(1024))
-        self.model.add(BatchNormalization())
-        self.model.add(Activation('relu'))
-        self.model.add(Dropout(0.4))
-        self.model.add(Dense(self.num_classes))
+        self.conv4a = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv4b = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv4c = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv4d = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
-        self.model.add(Activation('softmax'))
-        return self.model
+        self.conv5a = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv5b = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv5c = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv5d = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.pool5 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name='pool5')
+
+        self.flatten = tf.keras.layers.Flatten()
+
+        self.fc6 = tf.keras.layers.Dense(4096, activation='relu')
+        self.fc7 = tf.keras.layers.Dense(4096, activation='relu')
+        self.fc8 = tf.keras.layers.Dense(num_classes, activation='softmax')
+
+    def call(self, inputs):
+        x = self.conv1a(inputs)
+        x = self.conv1b(x)
+        x = self.pool1(x)
+
+        x = self.conv2a(x)
+        x = self.conv2b(x)
+        x = self.pool2(x)
+
+        x = self.conv3a(x)
+        x = self.conv3b(x)
+        x = self.conv3c(x)
+        x = self.conv3d(x)
+        x = self.pool3(x)
+
+        x = self.conv4a(x)
+        x = self.conv4b(x)
+        x = self.conv4c(x)
+        x = self.conv4d(x)
+        x = self.pool4(x)
+
+        x = self.conv5a(x)
+        x = self.conv5b(x)
+        x = self.conv5c(x)
+        x = self.conv5d(x)
+        x = self.pool5(x)
+
+        x = self.flatten(x)
+
+        x = self.fc6(x)
+        x = self.fc7(x)
+        x = self.fc8(x)
+        return x
 
 
 def generate_dataset(generator, num):
     data, label = generator.generate(num)
     dataset = tf.data.Dataset.from_tensor_slices((data, label))
     dataset = dataset.shuffle(buffer_size=200000)
-    dataset = dataset.batch(batch_size=64)
+    dataset = dataset.batch(batch_size=128)
     return dataset.prefetch(AUTOTUNE)
 
 
@@ -84,9 +119,7 @@ def save(model):
 
 def train_and_save():
     generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
-    m = VGG(4956, name='VGG')
-    m.setModel()
-    model = m.model
+    model = VGG(4956, name='VGG')
     train_dataset = generate_dataset(generator, 15)
     test_dataset = generate_dataset(generator, 5)
     train(model, train_dataset)

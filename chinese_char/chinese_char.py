@@ -94,7 +94,7 @@ class DataGenerator:
         y = np.zeros((all_num,), dtype=np.int32)
         for i in range(0, all_num, self.character_len):
             for j in range(self.character_len):
-                font = self.fonts[random.randint(0, 12)]
+                font = self.fonts[random.randint(0, 13)]
                 if j >= 4945:
                     font = self.fonts[random.randint(10, 25)]
 

@@ -75,7 +75,7 @@ class Driver:
         # Classification
         chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
 
-        name_images = np.zeros((18, 44, 44, 1))
+        name_images = np.zeros((len(name_image_boxes), 44, 44, 1))
         for i, box in enumerate(name_image_boxes):
             name_image = image_name[box[1]:box[3], box[0]:box[2]]
             desired_size = max(name_image.shape[:2])
@@ -89,10 +89,10 @@ class Driver:
             name_image = name_image.astype(np.float32)
             name_image = np.expand_dims(name_image, axis=-1)
             name_images[i, :, :, :] = np.array([name_image])
-        name_results = digit_classifier.predict(name_images).argmax(axis=1)
+        name_results = chinese_classifier.predict(name_images).argmax(axis=1)
         print(name_results)
 
-        nationality_images = np.zeros((18, 44, 44, 1))
+        nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
         for i, box in enumerate(nationality_image_boxes):
             nationality_image = image_nationality[box[1]:box[3], box[0]:box[2]]
             desired_size = max(nationality_image.shape[:2])
@@ -106,10 +106,10 @@ class Driver:
             nationality_image = nationality_image.astype(np.float32)
             nationality_image = np.expand_dims(nationality_image, axis=-1)
             nationality_images[i, :, :, :] = np.array([nationality_image])
-        nationality_results = digit_classifier.predict(nationality_images).argmax(axis=1)
+        nationality_results = chinese_classifier.predict(nationality_images).argmax(axis=1)
         print(nationality_results)
 
-        address_images = np.zeros((18, 44, 44, 1))
+        address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
         for i, box in enumerate(address_image_boxes):
             address_image = image_address[box[1]:box[3], box[0]:box[2]]
             desired_size = max(address_image.shape[:2])
@@ -123,8 +123,15 @@ class Driver:
             address_image = address_image.astype(np.float32)
             address_image = np.expand_dims(address_image, axis=-1)
             address_images[i, :, :, :] = np.array([address_image])
-        address_results = digit_classifier.predict(address_images).argmax(axis=1)
+        address_results = chinese_classifier.predict(address_images).argmax(axis=1)
         print(address_results)
+
+        return {
+            'number': digit_results,
+            'name': name_results,
+            'nationality': nationality_results,
+            'address': address_results,
+        }
 
 
 if __name__ == '__main__':

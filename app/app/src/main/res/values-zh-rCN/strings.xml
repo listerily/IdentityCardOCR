@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">身份证扫描器</string>
+    <string name="action_settings">设置</string>
+    <string name="action_start_capture">开始扫描</string>
+    <string name="action_view_results">查看扫描结果</string>
+    <string name="action_export_results">导出扫描结果</string>
+    <string name="action_show_info">相关信息</string>
+    <string name="description_id_card">ID Card</string>
+    <string name="content_info">本应用程序及其相关算法由_(:з」∠)_队开发。\n网络通信只用于识别，数据保存在本地。\n我们不会存储您的任何信息。</string>
+    <string name="capturing_title">正在识别…</string>
+    <string name="capturing_hint">请将您的身份证全部放在框内。</string>
+    <string name="camera_permission_denied">无法获取相机权限。</string>
+    <string name="text_birthday">出生</string>
+    <string name="text_year">年</string>
+    <string name="text_day">日</string>
+    <string name="text_month">月</string>
+    <string name="page_title_results">识别结果</string>
+    <string name="remove_all">删除全部</string>
+    <string name="message_remove_all">删除全部识别结果？该操作无法撤销。</string>
+    <string name="export_failed">导出失败。</string>
+</resources>

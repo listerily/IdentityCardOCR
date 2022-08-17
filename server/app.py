@@ -36,11 +36,14 @@ def index():
         # image = cv2.imdecode(image, cv2.IMREAD_COLOR)
         #print(f)
         # f.save('/var/www/uploads/uploaded_img.jpg')
+
         print("上传")
+
         return '上传成功'
 
     if request.method == 'GET':
         results = Driver(image,True)
+        print("GET")
         # results = {
         #     'name': 'image_name',
         #     'nationality': 'image_nationality',

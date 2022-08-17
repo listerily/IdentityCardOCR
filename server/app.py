@@ -15,10 +15,10 @@ def cors(environ):
     return environ
 
 
-@app.route('/', methods=['POST','GET'], strict_slashes=False)
+@app.route('/api', methods=['POST','GET'], strict_slashes=False)
 def index():
+    image = None
     if request.method == 'POST':
-
         img_str = request.form['image']
         img_byte = base64.b64decode(img_str)
         image = np.fromstring(img_byte, np.uint8)
@@ -35,10 +35,11 @@ def index():
         #     'address': 'image_address',
         #     'number': 'image_number'
         # }
+        
         # 显示结果页面
         return results
 
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8080)

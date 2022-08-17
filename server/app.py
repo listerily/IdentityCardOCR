@@ -20,20 +20,21 @@ def cors(environ):
 
 @app.route('/api', methods=['POST','GET'], strict_slashes=False)
 def index():
-    image = None
+    image_upload = None
     if request.method == 'POST':
         # data = json.loads(flask.request.get_data("data"))
         # data_64 = str.encode(data['data'])
-        img_upload = request.files.get("img_upload")
+        image_upload = request.data
         # 判断是否接收到图片
-        print(img_upload)
-        if img_upload:
+        # print(image_upload)
+        if image_upload:
             # 读取图片
-            image_string = base64.b64encode(img_upload.read())
+            image_string = base64.b64encode(image_upload)
             image_string = str(image_string, "utf8")
             print("接收成功")
             image = np.fromstring(image_string, np.uint8)
             image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            print(image)
         else:
             print("接收失败")
 
@@ -49,7 +50,7 @@ def index():
         return '上传成功'
 
     if request.method == 'GET':
-        results = Driver(image,True)
+        results = Driver(image_upload,True)
         print("GET")
         # results = {
         #     'name': 'image_name',

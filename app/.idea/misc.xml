@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable-anydpi/ic_action_export_results.xml" value="0.264" />
+        <entry key="app/src/main/res/drawable-anydpi/ic_action_remove.xml" value="0.3315" />
+        <entry key="app/src/main/res/drawable/gradient_background.xml" value="0.352" />
+        <entry key="app/src/main/res/layout/activity_capture.xml" value="0.264" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.338768115942029" />
+        <entry key="app/src/main/res/layout/activity_results.xml" value="0.536" />
+        <entry key="app/src/main/res/layout/content_main.xml" value="0.46979166666666666" />
+        <entry key="app/src/main/res/layout/fragment_first.xml" value="0.46979166666666666" />
+        <entry key="app/src/main/res/layout/recycler_item.xml" value="0.2" />
+        <entry key="app/src/main/res/xml/provider_paths.xml" value="0.2269021739130435" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

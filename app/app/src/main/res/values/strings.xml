@@ -1,12 +1,23 @@
 <resources>
-    <string name="app_name">IdentityCardOCR</string>
+    <string name="app_name">IDCard OCR</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="action_start_capture">Capture</string>
+    <string name="action_view_results">View Captured Results</string>
+    <string name="action_export_results">Export Results</string>
+    <string name="action_show_info">Info</string>
+    <string name="description_id_card">ID Card</string>
+    <string name="content_info">This app is developed by Team _(:з」∠)_. \nNetwork connection is used for ID Card recognition only. \nWe won\'t store your data.</string>
+    <string name="capturing_title">Capturing…</string>
+    <string name="capturing_hint">Please put your identity card inside this frame.</string>
+    <string name="camera_permission_denied">Permissions not granted by the user.</string>
+    <string name="text_birthday">B:</string>
+    <string name="text_year">Y</string>
+    <string name="text_month">M</string>
+    <string name="text_day">D</string>
+    <string name="page_title_results">Captured Results</string>
+    <string name="remove_all">Remove All</string>
+    <string name="message_remove_all">Remove all captured results? This action cannot be undone.</string>
+    <string name="export_failed">Failed to export.</string>
 </resources>

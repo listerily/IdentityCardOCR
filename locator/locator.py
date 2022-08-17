@@ -13,7 +13,7 @@ def locate_id_card(image, target_area=600000, debug=True):
     gaussian_blured_image = cv.GaussianBlur(scaled_image, (5, 5), 0)
     median_image = cv.medianBlur(gaussian_blured_image, 5)
     blured_image = cv.bilateralFilter(median_image, 13, 15, 15)
-    blured_image = cv.bilateralFilter(blured_image, 13, 15, 15)
+    # blured_image = cv.bilateralFilter(blured_image, 13, 15, 15)
 
     # Grayscale image
     gray_image = cv.cvtColor(blured_image, cv.COLOR_RGB2GRAY)

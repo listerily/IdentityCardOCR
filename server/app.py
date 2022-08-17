@@ -35,7 +35,7 @@ def index():
         #     'address': 'image_address',
         #     'number': 'image_number'
         # }
-        
+
         # 显示结果页面
         return results
 

@@ -16,7 +16,8 @@ class VGG(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
 
-        self.conv1a = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
+        self.conv1a = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same',
+                                             input_shape=(44, 44, 1))
         self.conv1b = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same')
         self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
@@ -118,7 +119,7 @@ def save(model):
 
 
 def train_and_save():
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
     model = VGG(4956, name='VGG')
     train_dataset = generate_dataset(generator, 15)
     test_dataset = generate_dataset(generator, 5)
@@ -128,7 +129,7 @@ def train_and_save():
 
 
 def continue_train():
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
     model = tf.keras.models.load_model(MODEL_FILEPATH)
     train_dataset = generate_dataset(generator, 15)
     test_dataset = generate_dataset(generator, 5)
@@ -153,16 +154,16 @@ def continue_train():
 
 
 def predict_some():
-    model = tf.keras.models.load_model(MODEL_FILEPATH)
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    # model = tf.keras.models.load_model(MODEL_FILEPATH)
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
     data, label = generator.generate(2)
 
     print(data.shape)
     print(label.shape)
     print(label)
     for image in data:
-        result = model.predict(np.array([image])).argmax()
-        r = character_set[result]
+        # result = model.predict(np.array([image])).argmax()
+        # r = character_set[result]
 
         plt.title('Prediction Result: ' + str(1))
         plt.imshow(image, 'gray')

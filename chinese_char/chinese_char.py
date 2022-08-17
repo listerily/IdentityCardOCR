@@ -34,7 +34,7 @@ class DataAugmentation:
         return img
 
     def make_brighter(self, img):
-        img = img + np.random.randint(25, 35, img.shape) * 1.
+        img = img + np.random.randint(20, 40, img.shape) * 1.
         return np.clip(img, 0, 255)
 
     def make_spots(self, img):
@@ -68,7 +68,7 @@ class DataAugmentation:
 
 class DataGenerator:
     def __init__(self, character_filepath, font_filepath_set,
-                 image_size=(44, 44), text_offset=(5, 1), font_size=[range(25, 38), range(35, 50)],
+                 image_size=(44, 44), text_offset=(5, 1), font_size=range(25, 38),
                  debug=False):
         self.debug = debug
 
@@ -76,9 +76,8 @@ class DataGenerator:
         self.character_set = df['Character'].tolist()
         self.character_len = len(self.character_set)
         self.fonts = []
-        for i in range(2):
-            font_filepath = font_filepath_set[i]
-            for f_size in font_size[i]:
+        for font_filepath in font_filepath_set:
+            for f_size in font_size:
                 font = ImageFont.truetype(font_filepath, f_size)
                 self.fonts.append(font)
         self.text_offset = text_offset
@@ -94,13 +93,10 @@ class DataGenerator:
         y = np.zeros((all_num,), dtype=np.int32)
         for i in range(0, all_num, self.character_len):
             for j in range(self.character_len):
-                font = self.fonts[random.randint(0, 13)]
-                if j >= 4945:
-                    font = self.fonts[random.randint(10, 25)]
-
                 y[i + j] = j
                 char = self.character_set[j]
-                random_offset = self.text_offset[0] + random.randint(-5, 5), self.text_offset[1] + random.randint(-5, 5)
+                font = random.choice(self.fonts)
+                random_offset = self.text_offset[0] + random.randint(-3, 3), self.text_offset[1] + random.randint(-3, 3)
 
                 image = Image.new('L', self.image_size)
                 d = ImageDraw.Draw(image)
@@ -120,6 +116,5 @@ class DataGenerator:
 
 
 if __name__ == '__main__':
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
-    x,y = generator.generate(2)
-    print(y)
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
+    x, y = generator.generate(2)

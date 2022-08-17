@@ -10,11 +10,12 @@ from segmentator.text_segmentator import extract_characters
 
 
 class Driver:
-    def __init__(self, filepath, locate=True, debug=False):
+    def __init__(self, image, locate=True, debug=False):
         self.debug = debug
         self.locate = locate
-        self.filepath = filepath
-        self.image = cv2.imread(filepath)
+        # self.filepath = filepath
+        # self.image = cv2.imread(filepath)
+        self.image = image
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def run(self):

@@ -1,11 +1,16 @@
+import io
 import json
 
 import cv2
 import flask
-import numpy as np
+import matplotlib.pyplot as plt
 from flask import Flask, request
 from driver.driver import Driver
 import base64
+from PIL import Image
+import base64
+import io
+import numpy as np
 
 app = Flask(__name__)
 
@@ -20,7 +25,7 @@ def cors(environ):
 
 @app.route('/api', methods=['POST','GET'], strict_slashes=False)
 def index():
-    image_upload = None
+    image = None
     if request.method == 'POST':
         # data = json.loads(flask.request.get_data("data"))
         # data_64 = str.encode(data['data'])
@@ -28,12 +33,20 @@ def index():
         # 判断是否接收到图片
         # print(image_upload)
         if image_upload:
-            # 读取图片
-            image_string = base64.b64encode(image_upload)
-            image_string = str(image_string, "utf8")
+
+            image_byte = base64.b64decode(image_upload)
+            print('image_byte for byte:',image_byte)
             print("接收成功")
-            image = np.fromstring(image_string, np.uint8)
-            image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            image = np.frombuffer(image_byte, np.uint8)
+            print('image for np :', image)
+            print(image.shape)
+            # image = image.reshape(44,44,3)
+            # print('image for np reshape :', image)
+            image = cv2.imdecode(image, cv2.COLOR_RGB2BGR)
+            plt.title('image')
+            plt.imshow(image, 'Accent')
+            plt.show()
+            print('image for cv :', image)
             print(image)
         else:
             print("接收失败")
@@ -50,7 +63,7 @@ def index():
         return '上传成功'
 
     if request.method == 'GET':
-        results = Driver(image_upload,True)
+        results = Driver(image,True)
         print("GET")
         # results = {
         #     'name': 'image_name',

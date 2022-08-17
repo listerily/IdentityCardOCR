@@ -91,12 +91,13 @@ class DataGenerator:
         augmentation = DataAugmentation()
         all_num = num * self.character_len
         x = np.zeros((all_num, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
-        y = np.zeros((all_num,), dtype=np.uint8)
+        y = np.zeros((all_num,), dtype=np.int32)
         for i in range(0, all_num, self.character_len):
             for j in range(self.character_len):
                 font = self.fonts[random.randint(0, 12)]
                 if j >= 4945:
                     font = self.fonts[random.randint(10, 25)]
+
                 y[i + j] = j
                 char = self.character_set[j]
                 random_offset = self.text_offset[0] + random.randint(-5, 5), self.text_offset[1] + random.randint(-5, 5)
@@ -110,7 +111,7 @@ class DataGenerator:
                 image = 255 - image
                 image = augmentation.do(image)
                 image = image.astype(np.float32)
-                if self.debug and j>=4945:
+                if self.debug:
                     plt.title('Label: ' + char + ', Index: ' + str(j))
                     plt.imshow(image, 'gray')
                     plt.show()
@@ -119,5 +120,6 @@ class DataGenerator:
 
 
 if __name__ == '__main__':
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'], debug=True)
-    generator.generate(1)
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
+    x,y = generator.generate(2)
+    print(y)

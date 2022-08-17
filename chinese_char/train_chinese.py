@@ -1,4 +1,3 @@
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -8,9 +7,9 @@ from chinese_char import DataGenerator
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-EPOCHS = 10
+EPOCHS = 5
 LEARNING_RATE = 0.001
-MODEL_FILEPATH = './chinese_classifier'
+MODEL_FILEPATH = '../saved_models/chinese_classifier'
 
 
 class VGG(tf.keras.Model):
@@ -85,7 +84,7 @@ def save(model):
 
 def train_and_save():
     generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf', 'OCR-B 10 BT.ttf'])
-    m = VGG(4955, name='VGG')
+    m = VGG(4956, name='VGG')
     m.setModel()
     model = m.model
     train_dataset = generate_dataset(generator, 15)
@@ -126,10 +125,13 @@ def predict_some():
     data, label = generator.generate(2)
 
     print(data.shape)
+    print(label.shape)
+    print(label)
     for image in data:
         result = model.predict(np.array([image])).argmax()
         r = character_set[result]
-        plt.title('Prediction Result: ' + str(r))
+
+        plt.title('Prediction Result: ' + str(1))
         plt.imshow(image, 'gray')
         plt.show()
 
@@ -138,7 +140,7 @@ if __name__ == '__main__':
     df = pd.read_csv('Chinese_labels.csv', encoding='utf-8')
     character_set = df['Character'].tolist()
     train_and_save()
-    for i in range(20):
+    for i in range(60):
         continue_train()
     # load_and_predict()
     # predict_some()

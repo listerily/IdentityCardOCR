@@ -1,5 +1,4 @@
 import math
-
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -65,6 +64,8 @@ class Driver:
         digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
         print(digit_results)
 
+        chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
+        chinese_images=np.
 
 if __name__ == '__main__':
     Driver('/home/listerily/IDCard/syx6.jpg', debug=True).run()

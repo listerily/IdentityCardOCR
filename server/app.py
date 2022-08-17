@@ -26,11 +26,14 @@ def index():
         # data_64 = str.encode(data['data'])
         img_upload = request.files.get("img_upload")
         # 判断是否接收到图片
+        print(img_upload)
         if img_upload:
             # 读取图片
             image_string = base64.b64encode(img_upload.read())
             image_string = str(image_string, "utf8")
             print("接收成功")
+            image = np.fromstring(image_string, np.uint8)
+            image = cv2.imdecode(image, cv2.IMREAD_COLOR)
         else:
             print("接收失败")
 
@@ -55,6 +58,7 @@ def index():
         #     'number': 'image_number'
         # }
         print("获取")
+        print(results)
         # 显示结果页面
         return results
     print("hello")

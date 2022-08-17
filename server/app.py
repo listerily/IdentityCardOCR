@@ -30,6 +30,10 @@ def index():
             # 读取图片
             image_string = base64.b64encode(img_upload.read())
             image_string = str(image_string, "utf8")
+            print("接收成功")
+        else:
+            print("接收失败")
+
         # img_str = request.data['image']
         # img_byte = base64.b64decode(img_str)
         # image = np.fromstring(img_byte, np.uint8)
@@ -37,7 +41,7 @@ def index():
         #print(f)
         # f.save('/var/www/uploads/uploaded_img.jpg')
 
-        print("上传")
+        #print("上传")
 
         return '上传成功'
 

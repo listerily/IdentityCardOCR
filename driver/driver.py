@@ -45,7 +45,7 @@ class Driver:
         # nationality_images = extract_characters(image_nationality, debug=self.debug)
         # address_images = extract_characters(image_address, debug=self.debug)
 
-        # Classification
+        # Digit Classification
         digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
         digit_images = np.zeros((18, 44, 44, 1))
         for i, box in enumerate(number_image_boxes):
@@ -64,6 +64,7 @@ class Driver:
         digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
         print(digit_results)
 
+        #Chinese Character Classification
         chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
         chinese_images=np.
 

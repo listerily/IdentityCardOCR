@@ -1,5 +1,4 @@
 import math
-
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -38,15 +37,22 @@ class Driver:
             plt.show()
 
         image_name, image_nationality, image_address, image_number = crop(preprocess_result, debug=self.debug)
+
         # Number Segmentation
         image_number = cv2.morphologyEx(image_number, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
         number_image_boxes = extract_numbers(image_number, debug=self.debug)
-        # Text Segmentation
-        # name_images = extract_characters(image_name, debug=self.debug)
-        # nationality_images = extract_characters(image_nationality, debug=self.debug)
-        # address_images = extract_characters(image_address, debug=self.debug)
 
-        # Classification
+        # Text Segmentation
+        image_name=cv2.morphologyEx(image_name, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        name_images_boxes = extract_characters(image_name, debug=self.debug)
+
+        image_nationality=cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        nationality_images_boxes = extract_characters(image_nationality, debug=self.debug)
+
+        image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        address_images_boxes = extract_characters(image_address, debug=self.debug)
+
+        # Digit Classification
         digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
         digit_images = np.zeros((18, 44, 44, 1))
         for i, box in enumerate(number_image_boxes):
@@ -65,6 +71,9 @@ class Driver:
         digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
         print(digit_results)
 
+        #Chinese Character Classification
+        chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
+        chinese_images=np.
 
 if __name__ == '__main__':
     Driver('/home/listerily/IDCard/syx6.jpg', debug=True).run()

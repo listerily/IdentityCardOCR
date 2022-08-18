@@ -73,7 +73,7 @@ class DataGenerator:
         self.debug = debug
 
         df = pd.read_csv(character_filepath, encoding='utf-8')
-        self.character_set = df['Character'].tolist()
+        self.character_set = list(df['name'])
         self.character_len = len(self.character_set)
         self.fonts = []
         for font_filepath in font_filepath_set:
@@ -116,5 +116,5 @@ class DataGenerator:
 
 
 if __name__ == '__main__':
-    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
-    x, y = generator.generate(2)
+    generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'], debug=True)
+    x, y = generator.generate(1)

@@ -143,5 +143,5 @@ class Driver:
 
 
 if __name__ == '__main__':
-    Driver('/home/listerily/IDCard/syx6.jpg', debug=True).run()
+    Driver(cv2.imread('/home/listerily/Desktop/syx6.jpg'), debug=True).run()
     # Driver('../../work/cards/0.png', locate=False, debug=True).run()

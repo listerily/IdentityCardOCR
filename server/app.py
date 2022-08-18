@@ -49,7 +49,9 @@ def index():
             # plt.show()
             print('image for cv :', image)
             print(image)
-            results = Driver(image, True).run()
+            #plt.imshow(image)
+            #plt.show()
+            results = Driver(image).run()
             print("results:", results)
             return '上传成功'
         else:

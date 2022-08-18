@@ -23,7 +23,7 @@ def cors(environ):
     return environ
 
 
-@app.route('/', methods=['POST','GET'], strict_slashes=False)
+@app.route('/api', methods=['POST','GET'], strict_slashes=False)
 def index():
     if request.method == 'POST':
         # data = json.loads(flask.request.get_data("data"))

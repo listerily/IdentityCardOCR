@@ -57,8 +57,8 @@ class Driver:
         image_nationality=cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
         nationality_image_boxes = extract_characters(image_nationality, debug=self.debug)
 
-        image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
-        address_image_boxes = extract_characters(image_address, debug=self.debug)
+        # image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
+        # address_image_boxes = extract_characters(image_address, debug=self.debug)
 
         # Digit Classification
         digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
@@ -80,24 +80,25 @@ class Driver:
         print(digit_results)
 
         # Classification
-        chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
+        # chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_classifier')
+        chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
 
-        name_images = np.zeros((len(name_image_boxes), 44, 44, 1))
-        for i, box in enumerate(name_image_boxes):
-            name_image = image_name[box[1]:box[3], box[0]:box[2]]
-            desired_size = max(name_image.shape[:2])
-            name_image = cv2.copyMakeBorder(name_image,
-                                             math.floor((desired_size - box[3] + box[1]) / 2),
-                                             math.ceil((desired_size - box[3] + box[1]) / 2),
-                                             math.floor((desired_size - box[2] + box[0]) / 2),
-                                             math.ceil((desired_size - box[2] + box[0]) / 2),
-                                             cv2.BORDER_CONSTANT, value=1.)
-            name_image = cv2.resize(name_image, (44, 44)) * 255
-            name_image = name_image.astype(np.float32)
-            name_image = np.expand_dims(name_image, axis=-1)
-            name_images[i, :, :, :] = np.array([name_image])
-        name_results = chinese_classifier.predict(name_images).argmax(axis=1)
-        print(name_results)
+        # name_images = np.zeros((len(name_image_boxes), 44, 44, 1))
+        # for i, box in enumerate(name_image_boxes):
+        #     name_image = image_name[box[1]:box[3], box[0]:box[2]]
+        #     desired_size = max(name_image.shape[:2])
+        #     name_image = cv2.copyMakeBorder(name_image,
+        #                                      math.floor((desired_size - box[3] + box[1]) / 2),
+        #                                      math.ceil((desired_size - box[3] + box[1]) / 2),
+        #                                      math.floor((desired_size - box[2] + box[0]) / 2),
+        #                                      math.ceil((desired_size - box[2] + box[0]) / 2),
+        #                                      cv2.BORDER_CONSTANT, value=1.)
+        #     name_image = cv2.resize(name_image, (44, 44)) * 255
+        #     name_image = name_image.astype(np.float32)
+        #     name_image = np.expand_dims(name_image, axis=-1)
+        #     name_images[i, :, :, :] = np.array([name_image])
+        # name_results = chinese_classifier.predict(name_images).argmax(axis=1)
+        # print(name_results)
 
         nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
         for i, box in enumerate(nationality_image_boxes):
@@ -113,31 +114,31 @@ class Driver:
             nationality_image = nationality_image.astype(np.float32)
             nationality_image = np.expand_dims(nationality_image, axis=-1)
             nationality_images[i, :, :, :] = np.array([nationality_image])
-        nationality_results = chinese_classifier.predict(nationality_images).argmax(axis=1)
+        nationality_results = chinese_nationality_classifier.predict(nationality_images).argmax(axis=1)
         print(nationality_results)
 
-        address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
-        for i, box in enumerate(address_image_boxes):
-            address_image = image_address[box[1]:box[3], box[0]:box[2]]
-            desired_size = max(address_image.shape[:2])
-            address_image = cv2.copyMakeBorder(address_image,
-                                             math.floor((desired_size - box[3] + box[1]) / 2),
-                                             math.ceil((desired_size - box[3] + box[1]) / 2),
-                                             math.floor((desired_size - box[2] + box[0]) / 2),
-                                             math.ceil((desired_size - box[2] + box[0]) / 2),
-                                             cv2.BORDER_CONSTANT, value=1.)
-            address_image = cv2.resize(address_image, (44, 44)) * 255
-            address_image = address_image.astype(np.float32)
-            address_image = np.expand_dims(address_image, axis=-1)
-            address_images[i, :, :, :] = np.array([address_image])
-        address_results = chinese_classifier.predict(address_images).argmax(axis=1)
-        print(address_results)
+        # address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
+        # for i, box in enumerate(address_image_boxes):
+        #     address_image = image_address[box[1]:box[3], box[0]:box[2]]
+        #     desired_size = max(address_image.shape[:2])
+        #     address_image = cv2.copyMakeBorder(address_image,
+        #                                      math.floor((desired_size - box[3] + box[1]) / 2),
+        #                                      math.ceil((desired_size - box[3] + box[1]) / 2),
+        #                                      math.floor((desired_size - box[2] + box[0]) / 2),
+        #                                      math.ceil((desired_size - box[2] + box[0]) / 2),
+        #                                      cv2.BORDER_CONSTANT, value=1.)
+        #     address_image = cv2.resize(address_image, (44, 44)) * 255
+        #     address_image = address_image.astype(np.float32)
+        #     address_image = np.expand_dims(address_image, axis=-1)
+        #     address_images[i, :, :, :] = np.array([address_image])
+        # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
+        # print(address_results)
 
         return {
             'number': digit_results,
-            'name': name_results,
+            # 'name': name_results,
             'nationality': nationality_results,
-            'address': address_results,
+            # 'address': address_results,
         }
 
 

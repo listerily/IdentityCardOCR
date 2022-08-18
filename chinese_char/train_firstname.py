@@ -63,7 +63,7 @@ def train(model):
     data = np.load('dataset/firstname_0.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
-    dataset = dataset.batch(batch_size=32)
+    dataset = dataset.batch(batch_size=128)
 
     model.fit(dataset, epochs=EPOCHS)
 
@@ -89,7 +89,7 @@ def train_and_save():
     model = FirstNameClassifier(1000, name='firstname_classifier')
     train(model)
     evaluate(model)
-    save(model, 666)
+    save(model)
 
 
 if __name__ == '__main__':

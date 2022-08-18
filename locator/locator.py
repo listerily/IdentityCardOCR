@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def locate_id_card(image, target_area=600000, debug=True):
+def locate_id_card(image, debug=True):
     h, w = image.shape[:2]
     image_area = h * w
-    scale_ratio = 0.5 #target_area / image_area
+    scale_ratio = 0.5
     scaled_image = cv.resize(image, (int(scale_ratio * w),
                                      int(scale_ratio * h)), interpolation=cv.INTER_AREA)
     # Gaussian blur

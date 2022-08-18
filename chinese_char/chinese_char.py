@@ -68,12 +68,12 @@ class DataAugmentation:
 
 class DataGenerator:
     def __init__(self, character_filepath, font_filepath_set,
-                 image_size=(44, 44), text_offset=(5, 1), font_size=range(25, 38),
+                 image_size=(44, 44), text_offset=(1, -5), font_size=range(35, 48),
                  debug=False):
         self.debug = debug
 
         df = pd.read_csv(character_filepath, encoding='utf-8')
-        self.character_set = list(df['name'])
+        self.character_set = df['Character'].tolist()
         self.character_len = len(self.character_set)
         self.fonts = []
         for font_filepath in font_filepath_set:
@@ -88,13 +88,16 @@ class DataGenerator:
             random.seed(seed)
 
         augmentation = DataAugmentation()
-        all_num = num * self.character_len
+        all_num = (num + 10) * self.character_len
         x = np.zeros((all_num, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
         y = np.zeros((all_num,), dtype=np.int32)
         for i in range(0, all_num, self.character_len):
             for j in range(self.character_len):
-                y[i + j] = j
-                char = self.character_set[j]
+                k = j
+                if i >= num * self.character_len:
+                    k = 50
+                y[i + j] = k
+                char = self.character_set[k]
                 font = random.choice(self.fonts)
                 random_offset = self.text_offset[0] + random.randint(-3, 3), self.text_offset[1] + random.randint(-3, 3)
 
@@ -108,7 +111,7 @@ class DataGenerator:
                 image = augmentation.do(image)
                 image = image.astype(np.float32)
                 if self.debug:
-                    plt.title('Label: ' + char + ', Index: ' + str(j))
+                    plt.title('Label: ' + char + ', Index: ' + str(k))
                     plt.imshow(image, 'gray')
                     plt.show()
                 x[i + j, :, :, :] = np.expand_dims(image, axis=-1)
@@ -116,5 +119,11 @@ class DataGenerator:
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'], debug=True)
     x, y = generator.generate(1)
+    print(y)
+=======
+    generator = DataGenerator('Chinese_labels.csv', ['STXihei.ttf'])
+    x, y = generator.generate(2)
+>>>>>>> ddfe77ee3c87289a09cdfb4e20f73d6f6fe9e285

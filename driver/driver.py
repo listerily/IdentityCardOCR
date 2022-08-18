@@ -36,7 +36,9 @@ class Driver:
                 plt.show()
         else:
             transformed_image = self.image
+
         preprocess_result = preprocess(transformed_image)
+
         if self.debug:
             plt.title('Preprocessed Image')
             plt.imshow(preprocess_result, 'gray')

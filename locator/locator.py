@@ -46,7 +46,7 @@ def locate_id_card(image , debug=True):
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
         area = w * h
-        if area  > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
+        if area > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
             if debug:
                 plt.title('Card Detection Result')
                 plt.imshow(scaled_image)

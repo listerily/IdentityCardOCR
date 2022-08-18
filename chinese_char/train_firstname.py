@@ -6,30 +6,31 @@ plt.rcParams["font.sans-serif"] = ['SimHei']
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 EPOCHS = 100
 LEARNING_RATE = 0.001
-MODEL_FILEPATH = '../saved_models/lastname_classifier'
+MODEL_FILEPATH = '../saved_models/firstname_classifier'
 
 
 class FirstNameClassifier(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
+        tf.keras.models.load_model('../saved_models/lastname_classifier_100_epoch')
 
-        self.conv1 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
-        self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
-
-        self.conv2 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
-        self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
-
-        self.conv3 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
-        self.pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
-
-        self.conv4 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
-        self.pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
-
-        self.flatten = tf.keras.layers.Flatten()
-
-        self.fc1 = tf.keras.layers.Dense(1024, activation='relu')
-        self.fc2 = tf.keras.layers.Dense(1024, activation='relu')
-        self.fc3 = tf.keras.layers.Dense(num_classes, activation='softmax')
+        # self.conv1 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
+        # self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+        #
+        # self.conv2 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        # self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+        #
+        # self.conv3 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
+        # self.pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+        #
+        # self.conv4 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
+        # self.pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+        #
+        # self.flatten = tf.keras.layers.Flatten()
+        #
+        # self.fc1 = tf.keras.layers.Dense(1024, activation='relu')
+        # self.fc2 = tf.keras.layers.Dense(1024, activation='relu')
+        # self.fc3 = tf.keras.layers.Dense(num_classes, activation='softmax')
 
     def call(self, inputs):
         x = self.conv1(inputs)
@@ -60,10 +61,11 @@ def train(model):
         metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
     )
 
-    data = np.load('dataset/firstname_0.npz')
+
+    data = np.load('dataset/firstname_10.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
-    dataset = dataset.batch(batch_size=128)
+    dataset = dataset.batch(batch_size=60)
 
     model.fit(dataset, epochs=EPOCHS)
 
@@ -73,7 +75,7 @@ def train(model):
 
 def evaluate(model):
     print('Evaluating')
-    data = np.load('dataset/firstname_10.npz')
+    data = np.load('dataset/firstname_0.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
     dataset = dataset.batch(batch_size=48)

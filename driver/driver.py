@@ -10,13 +10,18 @@ from segmentator.text_segmentator import extract_characters
 
 
 class Driver:
-    def __init__(self, image, locate=True, debug=False):
+    def __init__(self, image, locate=True, debug=True):
         self.debug = debug
         self.locate = locate
         # self.filepath = filepath
         # self.image = cv2.imread(filepath)
         self.image = image
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+        plt.title('Card Image')
+        plt.imshow(self.image)
+        plt.show()
+
 
     def run(self):
         if self.locate:
@@ -31,7 +36,9 @@ class Driver:
                 plt.show()
         else:
             transformed_image = self.image
+
         preprocess_result = preprocess(transformed_image)
+
         if self.debug:
             plt.title('Preprocessed Image')
             plt.imshow(preprocess_result, 'gray')

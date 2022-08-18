@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def locate_id_card(image, target_area=600000, debug=True):
+def locate_id_card(image , debug=True):
     h, w = image.shape[:2]
-    image_area = h * w
-    scale_ratio = target_area / image_area
+    scale_ratio = 0.5
     scaled_image = cv.resize(image, (int(scale_ratio * w),
                                      int(scale_ratio * h)), interpolation=cv.INTER_AREA)
     # Gaussian blur
@@ -14,6 +13,7 @@ def locate_id_card(image, target_area=600000, debug=True):
     median_image = cv.medianBlur(gaussian_blured_image, 5)
     blured_image = cv.bilateralFilter(median_image, 13, 15, 15)
     # blured_image = cv.bilateralFilter(blured_image, 13, 15, 15)
+
 
     # Grayscale image
     gray_image = cv.cvtColor(blured_image, cv.COLOR_RGB2GRAY)
@@ -31,7 +31,7 @@ def locate_id_card(image, target_area=600000, debug=True):
 
     # Obtain all contours
     contours, hierarchy = cv.findContours(binary_image, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-    contours = sorted(contours, key=lambda cnt: cv.contourArea(cnt), reverse=True)[:10]
+    contours = sorted(contours, key=lambda cnt: cv.contourArea(cnt), reverse=True)[:]
     if debug:
         plt.title('Visualizing Top-10 Contours')
         contour_image = cv.drawContours(scaled_image, contours, -1, (0, 255, 0), 3)
@@ -46,7 +46,7 @@ def locate_id_card(image, target_area=600000, debug=True):
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
         area = w * h
-        if area / target_area > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
+        if area > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
             if debug:
                 plt.title('Card Detection Result')
                 plt.imshow(scaled_image)

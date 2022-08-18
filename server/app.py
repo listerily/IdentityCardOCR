@@ -34,20 +34,24 @@ def index():
         # print(image_upload)
         if image_upload:
 
-            image_byte = base64.b64decode(image_upload)
-            print('image_byte for byte:',image_byte)
+            image_buffer = base64.b64decode(image_upload)
+            print('image_byte for byte:',image_buffer)
             print("接收成功")
-            image = np.frombuffer(image_byte, np.uint8)
+            image = np.frombuffer(image_buffer,dtype=np.uint8)
             print('image for np :', image)
-            print(image.shape)
-            # image = image.reshape(44,44,3)
+
+            # image = image.reshape()
             # print('image for np reshape :', image)
-            image = cv2.imdecode(image, cv2.COLOR_RGB2BGR)
-            plt.title('image')
-            plt.imshow(image, 'Accent')
-            plt.show()
+            image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # plt.title('Canny Edge Detection Results')
+            # plt.imshow(image, 'gray')
+            # plt.show()
             print('image for cv :', image)
             print(image)
+            results = Driver(image, True).run()
+            print("results:", results)
+            return '上传成功'
         else:
             print("接收失败")
 
@@ -60,7 +64,7 @@ def index():
 
         #print("上传")
 
-        return '上传成功'
+
 
     if request.method == 'GET':
         results = Driver(image,True)
@@ -75,7 +79,6 @@ def index():
         print(results)
         # 显示结果页面
         return results
-    print("hello")
     return None
 
 

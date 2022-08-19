@@ -138,7 +138,7 @@ def driver(image, locate, debug):
     #     address_images[i, :, :, :] = np.array([address_image])
     # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
     # print(address_results)
-    legal_id = check_id_code(digit_results)
+    legal_id = check_id_code(digit_results,True)
     if legal_id is not None:
         return {
             'success': 1,

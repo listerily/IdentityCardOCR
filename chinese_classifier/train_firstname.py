@@ -87,7 +87,7 @@ def evaluate(model):
 
 
 def save(model):
-    model.save(MODEL_FILEPATH + '_200_epoch', save_format="tf")
+    model.save(MODEL_FILEPATH, save_format="tf")
 
 
 def train_and_save():
@@ -101,7 +101,7 @@ def train_and_save():
     # train(model)
 
     # Continue train from trained model
-    model = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
+    model = tf.keras.models.load_model('../saved_models/firstname_classifier')
     #train(model)
 
     # save(model)

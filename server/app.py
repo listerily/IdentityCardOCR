@@ -77,7 +77,7 @@ def driver(image, locate, debug):
     print(idcode)
 
     # Classification
-    chinese_firstname_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
+    chinese_firstname_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier')
     chinese_lastname_classifier = tf.keras.models.load_model('../saved_models/lastname_classifier')
     chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
 

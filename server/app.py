@@ -78,7 +78,7 @@ def driver(image, locate, debug):
     # chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
 
     name_images = np.zeros((len(name_image_boxes), 44, 44, 1))
-    df = pd.read_csv('../chinese_char/chinese_nationality.csv', encoding='utf-8')
+    df = pd.read_csv('../chinese_classifier/firstname.csv', encoding='utf-8')
     name_sets = df['name'].tolist()
     for i, box in enumerate(name_image_boxes):
         name_image = image_name[box[1]:box[3], box[0]:box[2]]
@@ -94,11 +94,14 @@ def driver(image, locate, debug):
         name_image = np.expand_dims(name_image, axis=-1)
         name_images[i, :, :, :] = np.array([name_image])
     name_results = chinese_name_classifier.predict(name_images).argmax(axis=1)
-    print(name_results)
+    name = []
+    for r in name_results:
+        print(name_sets[r])
+        name.append(name_sets[r])
 
     nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
-    df = pd.read_csv('../chinese_char/chinese_nationality.csv', encoding='utf-8')
-    character_sets = df['name'].tolist()
+    df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')
+    nationality_sets = df['name'].tolist()
     for i, box in enumerate(nationality_image_boxes):
         nationality_image = image_nationality[box[1]:box[3], box[0]:box[2]]
         desired_size = max(nationality_image.shape[:2])
@@ -113,10 +116,10 @@ def driver(image, locate, debug):
         nationality_image = np.expand_dims(nationality_image, axis=-1)
         nationality_images[i, :, :, :] = np.array([nationality_image])
     nationality_results = chinese_nationality_classifier.predict(nationality_images).argmax(axis=1)
-    nationality = 'a'
+    nationality = []
     for r in nationality_results:
-        print(character_sets[r])
-        nationality = character_sets[r]
+        print(nationality_sets[r])
+        nationality.append(nationality_sets[r])
 
     # address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
     # for i, box in enumerate(address_image_boxes):

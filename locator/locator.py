@@ -1,22 +1,21 @@
 import threading
-
+from concurrent.futures import ThreadPoolExecutor
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
+result_points = None
+num = 0
 
-class locator(threading.Thread):
-    def __int__(self, scale_ratio, image, debug):
-        threading.Thread.__init__(self)
-        self.scale_ratio = scale_ratio
-        self.image = image
-        self.debug = debug
-
-    def run(self):
-        h, w = self.image.shape[:2]
+def locate(scale_ratio, image, debug):
+    # print("---------------locating----------------")
+    global num
+    global result_points
+    if result_points is None:
+        h, w =image.shape[:2]
         # scale_ratio = 0.6
-        scaled_image = cv.resize(self.image, (int(self.scale_ratio * w),
-                                              int(self.scale_ratio * h)), interpolation=cv.INTER_AREA)
+        scaled_image = cv.resize(image, (int(scale_ratio * w),
+                                              int(scale_ratio * h)), interpolation=cv.INTER_AREA)
         # Gaussian blur
         gaussian_blured_image = cv.GaussianBlur(scaled_image, (5, 5), 0)
         median_image = cv.medianBlur(gaussian_blured_image, 5)
@@ -28,7 +27,7 @@ class locator(threading.Thread):
 
         # Canny edge detection
         canny = cv.Canny(gray_image, 40, 120)
-        if self.debug:
+        if debug:
             plt.title('Canny Edge Detection Results')
             plt.imshow(canny, 'gray')
             plt.show()
@@ -40,7 +39,7 @@ class locator(threading.Thread):
         # Obtain all contours
         contours, hierarchy = cv.findContours(binary_image, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
         contours = sorted(contours, key=lambda cnt: cv.contourArea(cnt), reverse=True)[:]
-        if self.debug:
+        if debug:
             plt.title('Visualizing Top-10 Contours')
             contour_image = cv.drawContours(scaled_image, contours, -1, (0, 255, 0), 3)
             plt.imshow(contour_image, 'gray')
@@ -55,37 +54,35 @@ class locator(threading.Thread):
             ratio = w * 1.0 / h
             area = w * h
             if area > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
-                if self.debug:
-                    plt.title('Card Detection Result')
+                if debug:
+                    num=num+1
+                    plt.title(num)
                     plt.imshow(scaled_image)
                     for p in approx:
                         plt.scatter(p[0][0], p[0][1], marker="x", s=100, linewidths=3, color="r", zorder=10)
                     plt.show()
-
-                return approx / self.scale_ratio
-        return None
+                # print('approx / scale_ratio:',approx / scale_ratio)
+                if result_points is None:
+                    result_points = approx / scale_ratio
+                # print('result_points:', result_points)
+            # if result_points is None:
+            #     result_points = approx / scale_ratio
+            #     print('result_points',result_points)
+    # return None
 
 
 def locate_id_card(image, debug):
+    global result_points
 
-    locator1 = locator(0.8, image, debug)
-    locator2 = locator(0.6, image, debug)
-    locator3 = locator(0.4, image, debug)
-    locator4 = locator(0.2, image, debug)
+    pool=ThreadPoolExecutor(4)
 
-    p1 = locator1.start()
-    p2 = locator2.start()
-    p3 = locator3.start()
-    p4 = locator4.start()
+    pool.submit(locate,0.8, image, debug)
+    pool.submit(locate,0.6, image, debug)
+    pool.submit(locate,0.4, image, debug)
+    pool.submit(locate,0.2, image, debug)
 
-    if p1:
-        return p1
-    elif p2:
-        return p2
-    elif p3:
-        return p3
-    else:
-        return p4
+    pool.shutdown(True)
+    return result_points
 
 
 def order_points(pts):

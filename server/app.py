@@ -15,9 +15,13 @@ from flask import jsonify
 
 app = Flask(__name__)
 
+digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
+chinese_firstname_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier')
+chinese_lastname_classifier = tf.keras.models.load_model('../saved_models/lastname_classifier')
+chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
+
 
 def driver(image, locate, debug):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     plt.title('Card Image')
     plt.imshow(image)
     plt.show()
@@ -52,11 +56,7 @@ def driver(image, locate, debug):
     image_nationality = cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
     nationality_image_boxes = extract_characters(image_nationality, debug=debug)
 
-    # image_address=cv2.morphologyEx(image_address, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
-    # address_image_boxes = extract_characters(image_address, debug=self.debug)
-
     # Digit Classification
-    digit_classifier = tf.keras.models.load_model('../saved_models/digit_classifier')
     digit_images = np.zeros((18, 44, 44, 1))
     for i, box in enumerate(number_image_boxes):
         digit_image = image_number[box[1]:box[3], box[0]:box[2]]
@@ -72,16 +72,11 @@ def driver(image, locate, debug):
         digit_image = np.expand_dims(digit_image, axis=-1)
         digit_images[i, :, :, :] = np.array([digit_image])
     digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
-    idcode = ''
-    for r in range(0,len(digit_results)):
-        idcode += str(digit_results[r])
-    print(idcode)
+    id_code = ''
+    for r in range(0, len(digit_results)):
+        id_code += str(digit_results[r])
 
     # Classification
-    chinese_firstname_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier')
-    chinese_lastname_classifier = tf.keras.models.load_model('../saved_models/lastname_classifier')
-    chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
-
     name_images = np.zeros((len(name_image_boxes), 100, 100, 1))
     df_firstname = pd.read_csv('../chinese_classifier/firstname.csv', encoding='utf-8')
     df_lastname = pd.read_csv('../chinese_classifier/lastname.csv', encoding='utf-8')
@@ -130,22 +125,22 @@ def driver(image, locate, debug):
         print(nationality_sets[r])
         nationality += nationality_sets[r]
 
-    legal_id = check_id_code(idcode, True)
+    legal_id = check_id_code(id_code, True)
     if legal_id is not None:
-        return jsonify({
+        return {
             'success': 1,
-            'number': idcode,
+            'number': id_code,
             'year': legal_id.get('year'),
             'month': legal_id.get('month'),
             'ydate': legal_id.get('date'),
             'name': name,
             'nationality': nationality,
             'address': 'address'
-        })
+        }
     else:
-        return jsonify({
+        return {
             'success': 0
-        })
+        }
 
 
 @app.after_request
@@ -156,59 +151,17 @@ def cors(environ):
     return environ
 
 
-@app.route('/api', methods=['POST', 'GET'], strict_slashes=False)
+@app.route('/api', methods=['POST'], strict_slashes=False)
 def index():
-    results = None
-    if request.method == 'POST':
-        # data = json.loads(flask.request.get_data("data"))
-        # data_64 = str.encode(data['data'])
-        image_upload = request.data
-        # 判断是否接收到图片
-        # print(image_upload)
-        if image_upload:
+    image_upload = request.data
+    image_buffer = base64.b64decode(image_upload)
+    image = np.frombuffer(image_buffer, dtype=np.uint8)
 
-            image_buffer = base64.b64decode(image_upload)
-            # print('image_byte for byte:',image_buffer)
-            print("接收成功")
-            image = np.frombuffer(image_buffer, dtype=np.uint8)
-            # print('image for np :', image)
+    image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-            # print('image for cv :', image)
-            # print(image)
-
-            results = driver(image, True, True)
-
-            print('result in post', results)
-            print(results.get('number').__class__)
-            print(results.get('name').__class__)
-            print(results.get('nationality').__class__)
-            print(results.get('address').__class__)
-            if results is not None:
-                return results
-            else:
-                return '识别失败'
-        else:
-            print("接收失败")
-            return '接受失败'
-
-    # if request.method == 'GET':
-    #     # print('image',image)
-    #     # results = Driver(image,True).run()
-    #     # print("GET")
-    #     # # results = {
-    #     # #     'name': 'image_name',
-    #     # #     'nationality': 'image_nationality',
-    #     # #     'address': 'image_address',
-    #     # #     'number': 'image_number'
-    #     # # }
-    #     # print("获取")
-    #     # print(results)
-    #     # # 显示结果页面
-    #     return results
-    # return '上传失败'
+    results = driver(image, True, True)
+    return jsonify(results)
 
 
 if __name__ == '__main__':

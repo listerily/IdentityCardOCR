@@ -11,6 +11,7 @@ from preprocessor.preprocess import preprocess, crop
 from segmentator.number_segmentator import extract_numbers
 from segmentator.text_segmentator import extract_characters
 
+
 app = Flask(__name__)
 
 
@@ -140,7 +141,7 @@ def driver(image, locate, debug):
 
     return {
         'number': digit_results,
-        'name': name_results,
+        'name': name,
         'nationality': nationality,
         'address': 'address_results'
     }

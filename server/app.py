@@ -40,8 +40,10 @@ def index():
             # print(image)
             results = Driver(image, True, True).run()
             print('result in post', results)
-            # print(results.get('number').__class__)
-            # print(results.get('name').__class__)
+            print(results.get('number').__class__)
+            print(results.get('name').__class__)
+            print(results.get('nationality').__class__)
+            print(results.get('address').__class__)
             if results is not None:
                 return results
             else:

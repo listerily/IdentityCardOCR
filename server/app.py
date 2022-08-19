@@ -10,7 +10,7 @@ from locator.locator import locate_id_card, perspective_transform
 from preprocessor.preprocess import preprocess, crop
 from segmentator.number_segmentator import extract_numbers
 from segmentator.text_segmentator import extract_characters
-
+from check_code import check_id_code
 
 app = Flask(__name__)
 
@@ -138,13 +138,22 @@ def driver(image, locate, debug):
     #     address_images[i, :, :, :] = np.array([address_image])
     # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
     # print(address_results)
-
-    return {
-        'number': digit_results,
-        'name': name,
-        'nationality': nationality,
-        'address': 'address_results'
-    }
+    legal_id = check_id_code(digit_results)
+    if legal_id is not None:
+        return {
+            'success': 1,
+            'number': digit_results,
+            'year': legal_id.get('year'),
+            'month': legal_id.get('month'),
+            'ydate': legal_id.get('date'),
+            'name': name,
+            'nationality': nationality,
+            'address': 'address_results'
+        }
+    else:
+        return {
+            'success': 2
+        }
 
 
 @app.after_request

@@ -5,7 +5,7 @@ import tensorflow as tf
 import pandas as pd
 import random
 from keras.layers import *
-from chinese_char import DataGenerator
+from chinese_gen import DataGenerator
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE

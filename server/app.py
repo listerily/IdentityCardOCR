@@ -70,8 +70,11 @@ def driver(image, locate, debug):
         digit_image = digit_image.astype(np.float32)
         digit_image = np.expand_dims(digit_image, axis=-1)
         digit_images[i, :, :, :] = np.array([digit_image])
-    digit_results = str(digit_classifier.predict(digit_images).argmax(axis=1))
-    print(digit_results)
+    digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
+    idcode =''
+    for i in range(0,len(digit_results)):
+        idcode+=str(digit_results[i])
+    print(idcode)
 
     # Classification
     chinese_name_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
@@ -138,11 +141,11 @@ def driver(image, locate, debug):
     #     address_images[i, :, :, :] = np.array([address_image])
     # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
     # print(address_results)
-    legal_id = check_id_code(digit_results,True)
+    legal_id = check_id_code(idcode,True)
     if legal_id is not None:
         return {
             'success': 1,
-            'number': digit_results,
+            'number': idcode,
             'year': legal_id.get('year'),
             'month': legal_id.get('month'),
             'ydate': legal_id.get('date'),

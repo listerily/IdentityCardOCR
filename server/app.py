@@ -99,13 +99,13 @@ def driver(image, locate, debug):
         name_images[i, :, :, :] = np.array([name_image])
     firstname_results = chinese_firstname_classifier.predict(name_images[1:]).argmax(axis=1)
     lastname_results = chinese_lastname_classifier.predict(name_images[:1]).argmax(axis=1)
-    name = []
+    name = ''
     for r in lastname_results:
         ans = df_lastname['name'].tolist()[r]
-        name.append(ans)
+        name += ans
     for r in firstname_results:
         ans = df_firstname['name'].tolist()[r]
-        name.append(ans)
+        name += ans
 
     nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
     df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')
@@ -129,26 +129,6 @@ def driver(image, locate, debug):
         print(nationality_sets[r])
         nationality += nationality_sets[r]
 
-    # address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
-    # for i, box in enumerate(address_image_boxes):
-    #     address_image = image_address[box[1]:box[3], box[0]:box[2]]
-    #     desired_size = max(address_image.shape[:2])
-    #     address_image = cv2.copyMakeBorder(address_image,
-    #                                      math.floor((desired_size - box[3] + box[1]) / 2),
-    #                                      math.ceil((desired_size - box[3] + box[1]) / 2),
-    #                                      math.floor((desired_size - box[2] + box[0]) / 2),
-    #                                      math.ceil((desired_size - box[2] + box[0]) / 2),
-    #                                      cv2.BORDER_CONSTANT, value=1.)
-    #     address_image = cv2.resize(address_image, (44, 44)) * 255
-    #     address_image = address_image.astype(np.float32)
-    #     address_image = np.expand_dims(address_image, axis=-1)
-    #     address_images[i, :, :, :] = np.array([address_image])
-    # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
-    # print(address_results)
-    # address=''
-    # for r in address_results:
-    #     print(nationality_sets[r])
-    #     address += address_results[r]
     legal_id = check_id_code(idcode, True)
     if legal_id is not None:
         return {

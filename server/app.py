@@ -11,6 +11,7 @@ from preprocessor.preprocess import preprocess, crop
 from segmentator.number_segmentator import extract_numbers
 from segmentator.text_segmentator import extract_characters
 from check_code import check_id_code
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -131,7 +132,7 @@ def driver(image, locate, debug):
 
     legal_id = check_id_code(idcode, True)
     if legal_id is not None:
-        return {
+        return jsonify({
             'success': 1,
             'number': idcode,
             'year': legal_id.get('year'),
@@ -140,11 +141,11 @@ def driver(image, locate, debug):
             'name': name,
             'nationality': nationality,
             'address': 'address'
-        }
+        })
     else:
-        return {
+        return jsonify({
             'success': 0
-        }
+        })
 
 
 @app.after_request

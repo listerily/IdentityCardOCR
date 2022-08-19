@@ -152,7 +152,7 @@ def driver(image, locate, debug):
         }
     else:
         return {
-            'success': 2
+            'success': 0
         }
 
 

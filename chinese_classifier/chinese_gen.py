@@ -1,11 +1,14 @@
+from concurrent.futures import ProcessPoolExecutor
 from PIL import Image, ImageFont, ImageDraw
 import cv2
 import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
 # 设置显示中文字体
 plt.rcParams["font.sans-serif"] = ['SimHei']
+NUM_PARALLEL = 8
 
 
 class DataAugmentation:
@@ -48,10 +51,11 @@ class DataAugmentation:
 
     def do(self, img):
         img = cv2.blur(img, (3, 3))
-        if random.random() < 0.8:
-            if self.dilate and random.random() < 0.5:
+        if self.dilate:
+            if random.random() < 0.5:
                 img = self.add_dilate(img)
-            else:
+        elif self.erode:
+            if random.random() < 0.5:
                 img = self.add_erode(img)
         if random.random() < 0.5:
             img = self.add_gaussian_noise(img)
@@ -68,12 +72,12 @@ class DataAugmentation:
 
 class DataGenerator:
     def __init__(self, character_filepath, font_filepath_set,
-                 image_size=(44, 44), text_offset=(1, -5), font_size=range(35, 48),
+                 image_size=(44, 44), text_offset=(5, 1), font_size=range(25, 38),
                  debug=False):
         self.debug = debug
 
         df = pd.read_csv(character_filepath, encoding='utf-8')
-        self.character_set = list(df['name'])
+        self.character_set = df['Character'].tolist()
         self.character_len = len(self.character_set)
         self.fonts = []
         for font_filepath in font_filepath_set:
@@ -82,43 +86,55 @@ class DataGenerator:
                 self.fonts.append(font)
         self.text_offset = text_offset
         self.image_size = image_size
+        self.augmentation = DataAugmentation()
+
+    def generate_slice(self):
+        part_x = np.zeros((self.character_len, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
+        part_y = np.zeros((self.character_len,), dtype=np.int32)
+        for j in range(self.character_len):
+            font = random.choice(self.fonts)
+
+            part_y[j] = j
+            char = self.character_set[j]
+            random_offset = self.text_offset[0] + random.randint(-5, 5), self.text_offset[1] + random.randint(-5, 5)
+
+            image = Image.new('L', self.image_size)
+            d = ImageDraw.Draw(image)
+            d.text(random_offset, char, font=font, fill=255)
+            image = image.rotate(random.random() * 10 * random.choice([-1, 1]), expand=False)
+            image = np.array(image)
+
+            image = 255 - image
+            image = self.augmentation.do(image)
+            image = image.astype(np.float32)
+            if self.debug:
+                plt.title('Label: ' + char + ', Index: ' + str(j))
+                plt.imshow(image, 'gray')
+                plt.show()
+            part_x[j, :, :, :] = np.expand_dims(image, axis=-1)
+        return part_x, part_y
 
     def generate(self, num, seed=None):
         if seed is not None:
             random.seed(seed)
 
-        augmentation = DataAugmentation()
-        all_num = (num + 10) * self.character_len
-        x = np.zeros((all_num, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
-        y = np.zeros((all_num,), dtype=np.int32)
-        for i in range(0, all_num, self.character_len):
-            for j in range(self.character_len):
-                k = j
-                if i >= num * self.character_len:
-                    k = 50
-                y[i + j] = k
-                char = self.character_set[k]
-                font = random.choice(self.fonts)
-                random_offset = self.text_offset[0] + random.randint(-3, 3), self.text_offset[1] + random.randint(-3, 3)
+        all_num = num * self.character_len
+        data_x = np.zeros((all_num, self.image_size[0], self.image_size[1], 1), dtype=np.float32)
+        data_y = np.zeros((all_num,), dtype=np.int32)
+        for i in range(0, num):
+            part_x, part_y = self.generate_slice()
+            data_x[i * self.character_len:(i + 1) * self.character_len, :, :, :] = part_x
+            data_y[i * self.character_len:(i + 1) * self.character_len] = part_y
 
-                image = Image.new('L', self.image_size)
-                d = ImageDraw.Draw(image)
-                d.text(random_offset, char, font=font, fill=255)
-                image = image.rotate(random.random() * 10 * random.choice([-1, 1]), expand=False)
-                image = np.array(image)
+        return data_x, data_y
 
-                image = 255 - image
-                image = augmentation.do(image)
-                image = image.astype(np.float32)
-                if self.debug:
-                    plt.title('Label: ' + char + ', Index: ' + str(k))
-                    plt.imshow(image, 'gray')
-                    plt.show()
-                x[i + j, :, :, :] = np.expand_dims(image, axis=-1)
-        return x, y
+
+def generate_sub_dataset(idx):
+    generator = DataGenerator('firstname.csv', ['STXihei.ttf'], debug=False)
+    x, y = generator.generate(100)
+    np.savez('./dataset/firstname_%d' % idx, x, y)
 
 
 if __name__ == '__main__':
-    generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'], debug=True)
-    x, y = generator.generate(1)
-    print(y)
+    with ProcessPoolExecutor(max_workers=NUM_PARALLEL) as executor:
+        executor.map(generate_sub_dataset, range(11))

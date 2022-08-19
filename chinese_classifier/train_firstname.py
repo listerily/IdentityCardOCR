@@ -4,7 +4,7 @@ import tensorflow as tf
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-EPOCHS = 10
+EPOCHS = 40
 LEARNING_RATE = 0.001
 MODEL_FILEPATH = '../saved_models/firstname_classifier'
 
@@ -13,18 +13,24 @@ class FirstNameClassifier(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
 
-        self.conv1 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
+        self.conv1 = tf.keras.layers.Conv2D(32, kernel_size=3, activation='relu', padding='same', input_shape=(100, 100, 1))
         self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
         
-        self.conv2 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.conv2 = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same')
         self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
         
-        self.conv3 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
+        self.conv3 = tf.keras.layers.Conv2D(128, kernel_size=3, activation='relu', padding='same')
         self.pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
         
-        self.conv4 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
+        self.conv4 = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
         self.pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
-        
+
+        self.conv5 = tf.keras.layers.Conv2D(512, kernel_size=3, activation='relu', padding='same')
+        self.pool5 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+
+        self.conv6 = tf.keras.layers.Conv2D(1024, kernel_size=3, activation='relu', padding='same')
+        self.pool6 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+
         self.flatten = tf.keras.layers.Flatten()
         
         self.fc1 = tf.keras.layers.Dense(1024, activation='relu')
@@ -44,6 +50,12 @@ class FirstNameClassifier(tf.keras.Model):
         x = self.conv4(x)
         x = self.pool4(x)
 
+        x = self.conv5(x)
+        x = self.pool5(x)
+
+        x = self.conv6(x)
+        x = self.pool6(x)
+
         x = self.flatten(x)
 
         x = self.fc1(x)
@@ -54,7 +66,7 @@ class FirstNameClassifier(tf.keras.Model):
 
 def train(model):
     print('Training')
-    data = np.load('dataset/firstname_3.npz')
+    data = np.load('dataset/firstname_0.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
     dataset = dataset.batch(batch_size=48)
@@ -66,7 +78,7 @@ def train(model):
 
 def evaluate(model):
     print('Evaluating')
-    data = np.load('dataset/firstname_4.npz')
+    data = np.load('dataset/firstname_1.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
     dataset = dataset.batch(batch_size=48)
@@ -86,11 +98,13 @@ def train_and_save():
     #     loss=tf.keras.losses.sparse_categorical_crossentropy,
     #     metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
     # )
+    # train(model)
 
     # Continue train from trained model
     model = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
     #train(model)
-    #save(model)
+
+    # save(model)
     evaluate(model)
 
 

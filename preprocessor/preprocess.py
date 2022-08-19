@@ -43,9 +43,8 @@ def preprocess(image):
     image = np.clip((1.99 * image - 20), 0, 255).astype(np.uint8)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    image = cv2.erode(image, np.ones((3, 3), np.uint8), iterations=1)
-    image = cv2.dilate(image, np.ones((3, 3), np.uint8), iterations=1)
     image = cv2.resize(image, (1792, 1128))
+    _, image = cv2.threshold(image, 229, 255, cv2.THRESH_BINARY)
     return image / 255.
 
 

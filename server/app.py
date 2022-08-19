@@ -77,13 +77,13 @@ def driver(image, locate, debug):
     print(idcode)
 
     # Classification
-    chinese_name_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
+    chinese_firstname_classifier = tf.keras.models.load_model('../saved_models/firstname_classifier_200_epoch')
+    chinese_lastname_classifier = tf.keras.models.load_model('../saved_models/lastname_classifier')
     chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
-    # chinese_classifier=tf.keras.models.load_model('../saved_models/chinese_nationality_classifier')
 
-    name_images = np.zeros((len(name_image_boxes), 44, 44, 1))
-    df = pd.read_csv('../chinese_classifier/firstname.csv', encoding='utf-8')
-    name_sets = df['name'].tolist()
+    name_images = np.zeros((len(name_image_boxes), 100, 100, 1))
+    df_firstname = pd.read_csv('../chinese_classifier/firstname.csv', encoding='utf-8')
+    df_lastname = pd.read_csv('../chinese_classifier/lastname.csv', encoding='utf-8')
     for i, box in enumerate(name_image_boxes):
         name_image = image_name[box[1]:box[3], box[0]:box[2]]
         desired_size = max(name_image.shape[:2])
@@ -93,15 +93,19 @@ def driver(image, locate, debug):
                                         math.floor((desired_size - box[2] + box[0]) / 2),
                                         math.ceil((desired_size - box[2] + box[0]) / 2),
                                         cv2.BORDER_CONSTANT, value=1.)
-        name_image = cv2.resize(name_image, (44, 44)) * 255
+        name_image = cv2.resize(name_image, (100, 100)) * 255
         name_image = name_image.astype(np.float32)
         name_image = np.expand_dims(name_image, axis=-1)
         name_images[i, :, :, :] = np.array([name_image])
-    name_results = chinese_name_classifier.predict(name_images).argmax(axis=1)
-    name = ''
-    for r in name_results:
-        print(name_sets[r])
-        name += name_sets[r]
+    firstname_results = chinese_firstname_classifier.predict(name_images[1:]).argmax(axis=1)
+    lastname_results = chinese_lastname_classifier.predict(name_images[:1]).argmax(axis=1)
+    name = []
+    for r in lastname_results:
+        ans = df_lastname['name'].tolist()[r]
+        name.append(ans)
+    for r in firstname_results:
+        ans = df_firstname['name'].tolist()[r]
+        name.append(ans)
 
     nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
     df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')

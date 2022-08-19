@@ -4,7 +4,7 @@ import cv2
 
 
 def segment_character(image, axis,
-                      len_threshold=8,
+                      len_threshold=10,
                       space_density_threshold=4, character_density_threshold=8,
                       debug=False):
     hist = np.sum(1 - image, axis=axis)
@@ -38,7 +38,7 @@ def segment_character(image, axis,
     return boxes
 
 
-def extract_characters(image, debug=False, padding=3, area_threshold=650):
+def extract_characters(image, debug=False, padding=3, area_threshold=1200):
     boxes = []
     v_boxes = segment_character(image, 1, debug=debug, space_density_threshold=8, character_density_threshold=10)
     for v_box in v_boxes:

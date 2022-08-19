@@ -4,23 +4,32 @@ import tensorflow as tf
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-EPOCHS = 10
+EPOCHS = 1
 LEARNING_RATE = 0.001
 MODEL_FILEPATH = '../saved_models/lastname_classifier'
 
 
-class VGG(tf.keras.Model):
+class LastNameClassifier(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
 
-        self.conv1 = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same', input_shape=(44, 44, 1))
+        self.conv1 = tf.keras.layers.Conv2D(16, kernel_size=3, activation='relu', padding='same', input_shape=(100, 100, 1))
         self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
 
-        self.conv2 = tf.keras.layers.Conv2D(128, kernel_size=3, activation='relu', padding='same')
+        self.conv2 = tf.keras.layers.Conv2D(32, kernel_size=3, activation='relu', padding='same')
         self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
 
-        self.conv3 = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.conv3 = tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', padding='same')
         self.pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+
+        self.conv4 = tf.keras.layers.Conv2D(128, kernel_size=3, activation='relu', padding='same')
+        self.pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+
+        self.conv5 = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.pool5 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
+
+        self.conv6 = tf.keras.layers.Conv2D(256, kernel_size=3, activation='relu', padding='same')
+        self.pool6 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))
 
         self.flatten = tf.keras.layers.Flatten()
 
@@ -36,6 +45,15 @@ class VGG(tf.keras.Model):
 
         x = self.conv3(x)
         x = self.pool3(x)
+
+        x = self.conv4(x)
+        x = self.pool4(x)
+
+        x = self.conv5(x)
+        x = self.pool5(x)
+
+        x = self.conv6(x)
+        x = self.pool6(x)
 
         x = self.flatten(x)
 
@@ -61,7 +79,7 @@ def train(model):
 
             dataset = tf.data.Dataset.from_tensor_slices((x, y))
             dataset = dataset.shuffle(buffer_size=1000000)
-            dataset = dataset.batch(batch_size=256)
+            dataset = dataset.batch(batch_size=32)
             model.fit(dataset, epochs=1)
             del data
             del x
@@ -74,7 +92,7 @@ def evaluate(model):
     data = np.load('dataset/lastname_10.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
     dataset = dataset.shuffle(buffer_size=1000000)
-    dataset = dataset.batch(batch_size=256)
+    dataset = dataset.batch(batch_size=32)
     (loss, acc, a) = model.evaluate(dataset)
     print(loss, acc, a)
 
@@ -84,7 +102,7 @@ def save(model):
 
 
 def train_and_save():
-    model = VGG(99, name='chinese_classifier')
+    model = LastNameClassifier(99, name='lastname_classifier')
     train(model)
     evaluate(model)
     save(model)

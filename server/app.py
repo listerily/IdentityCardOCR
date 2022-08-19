@@ -71,9 +71,9 @@ def driver(image, locate, debug):
         digit_image = np.expand_dims(digit_image, axis=-1)
         digit_images[i, :, :, :] = np.array([digit_image])
     digit_results = digit_classifier.predict(digit_images).argmax(axis=1)
-    idcode =''
-    for i in range(0,len(digit_results)):
-        idcode+=str(digit_results[i])
+    idcode = ''
+    for r in range(0,len(digit_results)):
+        idcode += str(digit_results[r])
     print(idcode)
 
     # Classification
@@ -98,10 +98,10 @@ def driver(image, locate, debug):
         name_image = np.expand_dims(name_image, axis=-1)
         name_images[i, :, :, :] = np.array([name_image])
     name_results = chinese_name_classifier.predict(name_images).argmax(axis=1)
-    name = []
+    name = ''
     for r in name_results:
         print(name_sets[r])
-        name.append(name_sets[r])
+        name += name_sets[r]
 
     nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
     df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')
@@ -120,10 +120,10 @@ def driver(image, locate, debug):
         nationality_image = np.expand_dims(nationality_image, axis=-1)
         nationality_images[i, :, :, :] = np.array([nationality_image])
     nationality_results = chinese_nationality_classifier.predict(nationality_images).argmax(axis=1)
-    nationality = []
+    nationality = ''
     for r in nationality_results:
         print(nationality_sets[r])
-        nationality.append(nationality_sets[r])
+        nationality += nationality_sets[r]
 
     # address_images = np.zeros((len(address_image_boxes), 44, 44, 1))
     # for i, box in enumerate(address_image_boxes):
@@ -141,7 +141,11 @@ def driver(image, locate, debug):
     #     address_images[i, :, :, :] = np.array([address_image])
     # address_results = chinese_classifier.predict(address_images).argmax(axis=1)
     # print(address_results)
-    legal_id = check_id_code(idcode,True)
+    # address=''
+    # for r in address_results:
+    #     print(nationality_sets[r])
+    #     address += address_results[r]
+    legal_id = check_id_code(idcode, True)
     if legal_id is not None:
         return {
             'success': 1,
@@ -151,7 +155,7 @@ def driver(image, locate, debug):
             'ydate': legal_id.get('date'),
             'name': name,
             'nationality': nationality,
-            'address': 'address_results'
+            'address': 'address'
         }
     else:
         return {

@@ -21,4 +21,5 @@
     <string name="message_remove_all">Remove all captured results? This action cannot be undone.</string>
     <string name="export_failed">Failed to export.</string>
     <string name="network_failed">Network Error.</string>
+    <string name="capture_failed">Capture Failed</string>
 </resources>

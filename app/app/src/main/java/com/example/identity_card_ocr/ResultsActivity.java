@@ -176,7 +176,7 @@ public class ResultsActivity extends AppCompatActivity {
             private final TextView birthYearTextView;
             private final TextView birthMonthTextView;
             private final TextView birthDayTextView;
-            private final TextView addressTextView;
+//            private final TextView addressTextView;
 
             public ViewHolder(View view) {
                 super(view);
@@ -188,12 +188,12 @@ public class ResultsActivity extends AppCompatActivity {
                 birthYearTextView = view.findViewById(R.id.textview_id_birth_year);
                 birthMonthTextView = view.findViewById(R.id.textview_id_birth_month);
                 birthDayTextView =  view.findViewById(R.id.textview_id_birth_day);
-                addressTextView = view.findViewById(R.id.textview_id_address);
+//                addressTextView = view.findViewById(R.id.textview_id_address);
             }
 
-            public TextView getAddressTextView() {
-                return addressTextView;
-            }
+//            public TextView getAddressTextView() {
+//                return addressTextView;
+//            }
 
             public TextView getNumberTextView() {
                 return numberTextView;
@@ -258,7 +258,7 @@ public class ResultsActivity extends AppCompatActivity {
             viewHolder.getBirthYearTextView().setText(localDataSet.get(position).getBirthYear());
             viewHolder.getBirthMonthTextView().setText(localDataSet.get(position).getBirthMonth());
             viewHolder.getBirthDayTextView().setText(localDataSet.get(position).getBirthDay());
-            viewHolder.getAddressTextView().setText(localDataSet.get(position).getAddress());
+//            viewHolder.getAddressTextView().setText(localDataSet.get(position).getAddress());
         }
 
         // Return the size of your dataset (invoked by the layout manager)

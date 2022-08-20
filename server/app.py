@@ -133,8 +133,9 @@ def driver(image, locate, debug):
             'number': id_code,
             'year': legal_id.get('year'),
             'month': legal_id.get('month'),
-            'ydate': legal_id.get('date'),
+            'date': legal_id.get('date'),
             'name': name,
+            'gender': '男' if int(id_code[-2]) % 2 == 1 else '女',
             'nationality': nationality,
             'address': 'address'
         }

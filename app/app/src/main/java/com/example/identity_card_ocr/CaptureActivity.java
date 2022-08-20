@@ -131,19 +131,12 @@ public class CaptureActivity extends AppCompatActivity {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         String encodedImage;
-                        try {
-                            BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(picturePath));
-                            byte[] bytes = new byte[inputStream.available()];
-                            inputStream.read(bytes, 0, bytes.length);
-                            inputStream.close();
-                            encodedImage = Base64.encodeToString(bytes, Base64.DEFAULT);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            CaptureActivity.this.runOnUiThread(() -> Toast.makeText(CaptureActivity.this,
-                                    R.string.capture_failed,
-                                    Toast.LENGTH_LONG).show());
-                            return;
-                        }
+                        Bitmap bitmap = BitmapFactory.decodeFile(picturePath.getAbsolutePath());
+                        bitmap = resizeBitmap(bitmap, 2400, 1800);
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                        byte[] byteArray = byteArrayOutputStream .toByteArray();
+                        encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
                         OkHttpClient client = new OkHttpClient.Builder()
                                 .connectTimeout(10, TimeUnit.SECONDS)
                                 .writeTimeout(10, TimeUnit.SECONDS)
@@ -223,5 +216,24 @@ public class CaptureActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    private static Bitmap resizeBitmap(Bitmap image, int maxWidth, int maxHeight) {
+        if (maxHeight > 0 && maxWidth > 0) {
+            int width = image.getWidth();
+            int height = image.getHeight();
+            float ratioBitmap = (float) width / (float) height;
+            float ratioMax = (float) maxWidth / (float) maxHeight;
+
+            int finalWidth = maxWidth;
+            int finalHeight = maxHeight;
+            if (ratioMax > ratioBitmap) {
+                finalWidth = (int) ((float)maxHeight * ratioBitmap);
+            } else {
+                finalHeight = (int) ((float)maxWidth / ratioBitmap);
+            }
+            image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true);
+        }
+        return image;
     }
 }

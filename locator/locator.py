@@ -8,6 +8,7 @@ import numpy as np
 def locate(scale_ratio, image, debug):
     # print("---------------locating----------------")
     h, w = image.shape[:2]
+    full_area = h * w * scale_ratio * scale_ratio
     scaled_image = cv.resize(image, (int(scale_ratio * w),
                                      int(scale_ratio * h)), interpolation=cv.INTER_AREA)
     # Gaussian blur
@@ -47,7 +48,7 @@ def locate(scale_ratio, image, debug):
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
         area = w * h
-        if area > 0 and 1.38 < ratio < 1.78 and len(approx) == 4:
+        if area / full_area > .3 and 1.38 < ratio < 1.78 and len(approx) == 4:
             if debug:
                 plt.imshow(scaled_image)
                 for p in approx:
@@ -57,11 +58,11 @@ def locate(scale_ratio, image, debug):
 
 
 def locate_id_card(image, debug):
-    pool = ThreadPoolExecutor(4)
+    pool = ThreadPoolExecutor(1)
     ratios = [0.8, 0.6, 0.4, 0.2]
     futures = []
     for ratio in ratios:
-        future = pool.submit(locate, 0.8, image, debug)
+        future = pool.submit(locate, ratio, image, debug)
         futures.append(future)
     for future in futures:
         result = future.result()

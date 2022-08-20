@@ -30,7 +30,7 @@ def driver(image, locate, debug):
     if locate:
         points = locate_id_card(image, debug=debug)
         if points is None:
-            return None
+            return {'success': 0}
 
         transformed_image = perspective_transform(image, np.squeeze(points, axis=1))
         if debug:
@@ -161,10 +161,10 @@ def index():
     image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    results = driver(image, True, False)
+    results = driver(image, True, True)
     print(results)
     return jsonify(results)
 
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=8080)
+    app.run(host="0.0.0.0", port=8080)

@@ -21,4 +21,7 @@
     <string name="export_failed">导出失败。</string>
     <string name="network_failed">网络错误</string>
     <string name="capture_failed">拍摄失败</string>
+    <string name="action_capture">拍摄</string>
+    <string name="recognize_failed">识别失败</string>
+    <string name="recognize_succeed">识别成功</string>
 </resources>

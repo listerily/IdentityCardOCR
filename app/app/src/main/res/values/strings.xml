@@ -22,4 +22,7 @@
     <string name="export_failed">Failed to export.</string>
     <string name="network_failed">Network Error.</string>
     <string name="capture_failed">Capture Failed</string>
+    <string name="action_capture">Capture</string>
+    <string name="recognize_failed">Recognize Failed</string>
+    <string name="recognize_succeed">Successfully Recognized</string>
 </resources>

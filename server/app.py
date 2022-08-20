@@ -22,6 +22,7 @@ chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chi
 
 
 def driver(image, locate, debug):
+    print(image.shape)
     if debug:
         plt.title('Card Image')
         plt.imshow(image)
@@ -47,14 +48,9 @@ def driver(image, locate, debug):
 
     image_name, image_nationality, image_address, image_number = crop(preprocess_result, debug=debug)
     # Number Segmentation
-    image_number = cv2.morphologyEx(image_number, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
     number_image_boxes = extract_numbers(image_number, debug=debug)
-
     # Text Segmentation
-    image_name = cv2.morphologyEx(image_name, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
     name_image_boxes = extract_characters(image_name, debug=debug)
-
-    image_nationality = cv2.morphologyEx(image_nationality, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=2)
     nationality_image_boxes = extract_characters(image_nationality, debug=debug)
 
     # Digit Classification

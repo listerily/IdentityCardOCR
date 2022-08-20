@@ -27,7 +27,7 @@ def locate(scale_ratio, image, debug):
 
     # Thresholding
     is_success, binary_image = cv.threshold(canny, 60, 255, cv.THRESH_OTSU)
-    binary_image = cv.dilate(binary_image, np.ones((3, 3)))
+    binary_image = cv.dilate(binary_image, np.ones((2, 2)))
 
     # Obtain all contours
     contours, hierarchy = cv.findContours(binary_image, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
@@ -41,7 +41,7 @@ def locate(scale_ratio, image, debug):
     # Obtain card area
     for c in contours:
         peri = cv.arcLength(c, True)
-        approx = cv.approxPolyDP(c, 0.03 * peri, True)
+        approx = cv.approxPolyDP(c, 0.05 * peri, True)
 
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
@@ -57,7 +57,7 @@ def locate(scale_ratio, image, debug):
 
 def locate_id_card(image, debug):
     pool = ThreadPoolExecutor()
-    ratios = [0.8, 0.6, 0.4, 0.2]
+    ratios = [0.8, 0.5, 0.3, 0.2, 0.15, 0.1, 0.05, 0.02]
     futures = []
     for ratio in ratios:
         future = pool.submit(locate, ratio, image, debug)

@@ -104,26 +104,29 @@ def driver(image, locate, debug):
         ans = df_firstname['name'].tolist()[r]
         name += ans
 
-    nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
-    df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')
-    nationality_sets = df['name'].tolist()
-    for i, box in enumerate(nationality_image_boxes):
-        nationality_image = image_nationality[box[1]:box[3], box[0]:box[2]]
-        desired_size = max(nationality_image.shape[:2])
-        nationality_image = cv2.copyMakeBorder(nationality_image,
-                                               math.floor((desired_size - box[3] + box[1]) / 2),
-                                               math.ceil((desired_size - box[3] + box[1]) / 2),
-                                               math.floor((desired_size - box[2] + box[0]) / 2),
-                                               math.ceil((desired_size - box[2] + box[0]) / 2),
-                                               cv2.BORDER_CONSTANT, value=1.)
-        nationality_image = cv2.resize(nationality_image, (44, 44)) * 255
-        nationality_image = nationality_image.astype(np.float32)
-        nationality_image = np.expand_dims(nationality_image, axis=-1)
-        nationality_images[i, :, :, :] = np.array([nationality_image])
-    nationality_results = chinese_nationality_classifier.predict(nationality_images).argmax(axis=1)
-    nationality = ''
-    for r in nationality_results:
-        nationality += nationality_sets[r]
+    if len(nationality_image_boxes) != 0:
+        nationality_images = np.zeros((len(nationality_image_boxes), 44, 44, 1))
+        df = pd.read_csv('../chinese_classifier/chinese_nationality.csv', encoding='utf-8')
+        nationality_sets = df['name'].tolist()
+        for i, box in enumerate(nationality_image_boxes):
+            nationality_image = image_nationality[box[1]:box[3], box[0]:box[2]]
+            desired_size = max(nationality_image.shape[:2])
+            nationality_image = cv2.copyMakeBorder(nationality_image,
+                                                   math.floor((desired_size - box[3] + box[1]) / 2),
+                                                   math.ceil((desired_size - box[3] + box[1]) / 2),
+                                                   math.floor((desired_size - box[2] + box[0]) / 2),
+                                                   math.ceil((desired_size - box[2] + box[0]) / 2),
+                                                   cv2.BORDER_CONSTANT, value=1.)
+            nationality_image = cv2.resize(nationality_image, (44, 44)) * 255
+            nationality_image = nationality_image.astype(np.float32)
+            nationality_image = np.expand_dims(nationality_image, axis=-1)
+            nationality_images[i, :, :, :] = np.array([nationality_image])
+        nationality_results = chinese_nationality_classifier.predict(nationality_images).argmax(axis=1)
+        nationality = ''
+        for r in nationality_results:
+            nationality += nationality_sets[r]
+    else:
+        nationality = ''
 
     legal_id = check_id_code(id_code, True)
     if legal_id is not None:

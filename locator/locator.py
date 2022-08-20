@@ -6,7 +6,6 @@ import numpy as np
 
 
 def locate(scale_ratio, image, debug):
-    # print("---------------locating----------------")
     h, w = image.shape[:2]
     full_area = h * w * scale_ratio * scale_ratio
     scaled_image = cv.resize(image, (int(scale_ratio * w),
@@ -15,7 +14,6 @@ def locate(scale_ratio, image, debug):
     gaussian_blured_image = cv.GaussianBlur(scaled_image, (5, 5), 0)
     median_image = cv.medianBlur(gaussian_blured_image, 5)
     blured_image = cv.bilateralFilter(median_image, 13, 15, 15)
-    # blured_image = cv.bilateralFilter(blured_image, 13, 15, 15)
 
     # Grayscale image
     gray_image = cv.cvtColor(blured_image, cv.COLOR_RGB2GRAY)
@@ -29,11 +27,11 @@ def locate(scale_ratio, image, debug):
 
     # Thresholding
     is_success, binary_image = cv.threshold(canny, 60, 255, cv.THRESH_OTSU)
-    binary_image = cv.dilate(binary_image, np.ones((2, 2)))
+    binary_image = cv.dilate(binary_image, np.ones((3, 3)))
 
     # Obtain all contours
     contours, hierarchy = cv.findContours(binary_image, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-    contours = sorted(contours, key=lambda cnt: cv.contourArea(cnt), reverse=True)[:]
+    contours = sorted(contours, key=lambda cnt: cv.contourArea(cnt), reverse=True)[:10]
     if debug:
         plt.title('Visualizing Top-10 Contours')
         contour_image = cv.drawContours(scaled_image, contours, -1, (0, 255, 0), 3)
@@ -48,7 +46,7 @@ def locate(scale_ratio, image, debug):
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
         area = w * h
-        if area / full_area > .3 and 1.38 < ratio < 1.78 and len(approx) == 4:
+        if area / full_area > .3 and 1 < ratio < 2 and len(approx) == 4:
             if debug:
                 plt.imshow(scaled_image)
                 for p in approx:
@@ -58,7 +56,7 @@ def locate(scale_ratio, image, debug):
 
 
 def locate_id_card(image, debug):
-    pool = ThreadPoolExecutor(1)
+    pool = ThreadPoolExecutor()
     ratios = [0.8, 0.6, 0.4, 0.2]
     futures = []
     for ratio in ratios:

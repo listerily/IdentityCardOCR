@@ -161,7 +161,7 @@ def index():
     image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    results = driver(image, True, True)
+    results = driver(image, True, False)
     print(results)
     return jsonify(results)
 

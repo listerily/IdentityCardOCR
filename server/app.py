@@ -22,9 +22,10 @@ chinese_nationality_classifier = tf.keras.models.load_model('../saved_models/chi
 
 
 def driver(image, locate, debug):
-    plt.title('Card Image')
-    plt.imshow(image)
-    plt.show()
+    if debug:
+        plt.title('Card Image')
+        plt.imshow(image)
+        plt.show()
 
     if locate:
         points = locate_id_card(image, debug=debug)
@@ -160,7 +161,7 @@ def index():
     image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    results = driver(image, True, True)
+    results = driver(image, True, False)
     return jsonify(results)
 
 

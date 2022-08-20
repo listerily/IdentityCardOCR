@@ -1,6 +1,5 @@
 def check_id_length(n):
     if len(str(n)) != 18:
-        print("只支持18位身份证号查询")
         return False
     else:
         return True

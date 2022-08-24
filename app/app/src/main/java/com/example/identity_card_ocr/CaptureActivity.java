@@ -227,7 +227,7 @@ public class CaptureActivity extends AppCompatActivity {
         );
     }
 
-    // resize bitmap using maximun width and height
+    // resize bitmap using maximum width and height
     private static Bitmap resizeBitmap(Bitmap image, int maxWidth, int maxHeight) {
         if (maxHeight > 0 && maxWidth > 0) {
             int width = image.getWidth();

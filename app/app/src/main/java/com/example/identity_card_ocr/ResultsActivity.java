@@ -21,7 +21,6 @@ import android.widget.TextView;
 import com.example.identity_card_ocr.databinding.ActivityResultsBinding;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class ResultsActivity extends AppCompatActivity {
     private ActivityResultsBinding binding;
@@ -29,33 +28,40 @@ public class ResultsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Inflate view using view binding
         binding = ActivityResultsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // declare support action bar
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle(R.string.page_title_results);
         }
+        // set onClickListener for FloatingActionButton
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Create alert dialog, warning users that all captured data would be swiped.
                 new AlertDialog.Builder(ResultsActivity.this)
                         .setTitle(R.string.remove_all)
                         .setMessage(R.string.message_remove_all)
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-
+                                // Do nothing, skipped
                             }
                         })
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                // Open or create database
                                 SQLiteDatabase database = openOrCreateDatabase("captured_results.db", MODE_PRIVATE, null);
                                 database.execSQL("CREATE TABLE IF NOT EXISTS results(id_number VARCHAR, name VARCHAR, nationality VARCHAR, gender VARCHAR, birth_year VARCHAR, birth_month VARCHAR, birth_day VARCHAR, address VARCHAR);");
+                                // Delete delete all data
                                 database.execSQL("DELETE FROM results;");
+                                // Close all
                                 database.close();
                                 initializeRecyclerView();
                             }
@@ -66,8 +72,10 @@ public class ResultsActivity extends AppCompatActivity {
     }
 
     public void initializeRecyclerView() {
+        // Open or create database
         SQLiteDatabase database = openOrCreateDatabase("captured_results.db", MODE_PRIVATE, null);
         database.execSQL("CREATE TABLE IF NOT EXISTS results(id_number VARCHAR, name VARCHAR, nationality VARCHAR, gender VARCHAR, birth_year VARCHAR, birth_month VARCHAR, birth_day VARCHAR, address VARCHAR);");
+        // Fetch all data from table
         Cursor resultSet = database.rawQuery("SELECT * FROM results;", null);
         ArrayList<CapturedResultDataObject> arrayList = new ArrayList<>();
         if (resultSet.moveToFirst()) {
@@ -84,9 +92,11 @@ public class ResultsActivity extends AppCompatActivity {
                 ));
             } while(resultSet.moveToNext());
         }
+        // Close all
         resultSet.close();
         database.close();
 
+        // Create sub-views using layout manager
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         binding.recyclerView.setLayoutManager(layoutManager);
@@ -105,6 +115,7 @@ public class ResultsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // Data Object used to store data fetched from database
     public static class CapturedResultDataObject {
         String number;
         String name;
@@ -153,13 +164,10 @@ public class ResultsActivity extends AppCompatActivity {
         public String getBirthDay() {
             return birthDay;
         }
-
-        public String getAddress() {
-            return address;
-        }
     }
 
 
+    // Recycler Adapter
     public static class CapturedResultsAdapter extends RecyclerView.Adapter<CapturedResultsAdapter.ViewHolder> {
 
         private final ArrayList<CapturedResultDataObject> localDataSet;
@@ -176,7 +184,6 @@ public class ResultsActivity extends AppCompatActivity {
             private final TextView birthYearTextView;
             private final TextView birthMonthTextView;
             private final TextView birthDayTextView;
-//            private final TextView addressTextView;
 
             public ViewHolder(View view) {
                 super(view);
@@ -188,12 +195,7 @@ public class ResultsActivity extends AppCompatActivity {
                 birthYearTextView = view.findViewById(R.id.textview_id_birth_year);
                 birthMonthTextView = view.findViewById(R.id.textview_id_birth_month);
                 birthDayTextView =  view.findViewById(R.id.textview_id_birth_day);
-//                addressTextView = view.findViewById(R.id.textview_id_address);
             }
-
-//            public TextView getAddressTextView() {
-//                return addressTextView;
-//            }
 
             public TextView getNumberTextView() {
                 return numberTextView;
@@ -258,10 +260,9 @@ public class ResultsActivity extends AppCompatActivity {
             viewHolder.getBirthYearTextView().setText(localDataSet.get(position).getBirthYear());
             viewHolder.getBirthMonthTextView().setText(localDataSet.get(position).getBirthMonth());
             viewHolder.getBirthDayTextView().setText(localDataSet.get(position).getBirthDay());
-//            viewHolder.getAddressTextView().setText(localDataSet.get(position).getAddress());
         }
 
-        // Return the size of your dataset (invoked by the layout manager)
+        // Return the size of dataset (invoked by the layout manager)
         @Override
         public int getItemCount() {
             return localDataSet.size();

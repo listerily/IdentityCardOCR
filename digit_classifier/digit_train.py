@@ -1,6 +1,11 @@
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
+########################################################
+#
+#    MODULE TRAIN DIGIT
+#      TRAIN DIGIT trains digit images classifier
+#    using lastname datasets.
+#
+########################################################
+
 import tensorflow as tf
 from digit_gen import DataGenerator
 
@@ -10,6 +15,7 @@ LEARNING_RATE = .001
 MODEL_FILEPATH = '../saved_models/digit_classifier'
 
 
+# Model definition
 class LeNet5(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
@@ -39,6 +45,7 @@ class LeNet5(tf.keras.Model):
         return x
 
 
+# Generate dataset using data generator
 def generate_dataset(generator, num):
     data, label = generator.generate(num)
     dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -67,29 +74,17 @@ def save(model):
 
 
 def train_and_save():
+    # Create data generator.
+    # Data generator would generate dataset into memory.
     generator = DataGenerator('digit.csv', ['OCR-B 10 BT.ttf'])
     model = LeNet5(11, name='lenet5')
     train_dataset = generate_dataset(generator, 150000)
     test_dataset = generate_dataset(generator, 4096)
     train(model, train_dataset)
+    # Evaluation and save
     evaluate(model, test_dataset)
     save(model)
 
 
-def load_and_predict():
-    model = tf.keras.models.load_model(MODEL_FILEPATH)
-    for i in range(18):
-        image = cv2.imread('../' + str(i) + '.png')
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        image = image.astype(np.float32)
-        image = np.expand_dims(image, axis=-1)
-        result = model.predict(np.array([image])).argmax()
-
-        plt.title('Prediction Result: ' + str(result))
-        plt.imshow(image, 'gray')
-        plt.show()
-
-
 if __name__ == '__main__':
-    # train_and_save()
-    load_and_predict()
+    train_and_save()

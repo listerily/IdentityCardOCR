@@ -1,4 +1,12 @@
-import threading
+########################################################
+#
+#    MODULE LOCATOR
+#      LOCATOR finds and locates ID Card in an image.
+#    Then the ID Card would be cropped and transformed
+#    into a rectangle image.
+#
+########################################################
+
 from concurrent.futures import ThreadPoolExecutor
 import cv2 as cv
 import matplotlib.pyplot as plt
@@ -6,6 +14,7 @@ import numpy as np
 
 
 def locate(scale_ratio, image, debug):
+    # Scale image
     h, w = image.shape[:2]
     full_area = h * w * scale_ratio * scale_ratio
     scaled_image = cv.resize(image, (int(scale_ratio * w),
@@ -38,7 +47,7 @@ def locate(scale_ratio, image, debug):
         plt.imshow(contour_image, 'gray')
         plt.show()
 
-    # Obtain card area
+    # Obtain card
     for c in contours:
         peri = cv.arcLength(c, True)
         approx = cv.approxPolyDP(c, 0.05 * peri, True)
@@ -46,6 +55,7 @@ def locate(scale_ratio, image, debug):
         x, y, w, h = cv.boundingRect(c)
         ratio = w * 1.0 / h
         area = w * h
+        # If card area, size ratio and length of approx were satisfied, then locating succeed.
         if area / full_area > .3 and 1 < ratio < 2 and len(approx) == 4:
             if debug:
                 plt.imshow(scaled_image)
@@ -56,16 +66,22 @@ def locate(scale_ratio, image, debug):
 
 
 def locate_id_card(image, debug):
+    # Function locate_id_catd tries different scale ratios and pass them to Function locate
+    # Create Thread Pool
     pool = ThreadPoolExecutor()
     ratios = [0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1, 0.08]
+    # Assign tasks and store futures
     futures = []
     for ratio in ratios:
         future = pool.submit(locate, ratio, image, debug)
         futures.append(future)
+    # Fetch results from futures
     for future in futures:
         result = future.result()
+        # If locator successfully located ID Card, then return the result
         if result is not None:
             return result
+    # Locating failed. Returning None.
     return None
 
 
@@ -90,6 +106,7 @@ def order_points(pts):
     return rect
 
 
+# Transform 4-edged image to a rectangle
 def perspective_transform(image, pts):
     # obtain a consistent order of the points and unpack them
     # individually

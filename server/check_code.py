@@ -1,4 +1,15 @@
+########################################################
+#
+#    MODULE ID NUMBER CHECK
+#      ID NUMBER CHECK checks if the ID Card number is
+#    valid. If it's invalid, the server would tell user
+#    that recognition has failed. If number check passed,
+#    then our recognition succeeded.
+#
+########################################################
+
 def check_id_length(n):
+    # Length of id number must be 18
     if len(str(n)) != 18:
         return False
     else:
@@ -6,6 +17,7 @@ def check_id_length(n):
 
 
 def check_x(n):
+    # X should only appear at the last place
     for i in range(0, 16):
         if n[i] == 'X':
             return False
@@ -13,6 +25,7 @@ def check_x(n):
 
 
 def year_is_legal(year):
+    # Check brith year validity
     if 1900 < int(year) < 2100:
         return True
     else:
@@ -20,6 +33,7 @@ def year_is_legal(year):
 
 
 def is_ordinary_year(year):
+    # check ordinary year
     if int(year) % 4 == 0 and int(year) % 100 != 0 or int(year) % 400 == 0:
         return False
     else:
@@ -27,6 +41,7 @@ def is_ordinary_year(year):
 
 
 def month_is_legal(month):
+    # check month validity
     if 0 < int(month) < 13:
         return True
     else:
@@ -34,6 +49,7 @@ def month_is_legal(month):
 
 
 def days(year, month):
+    # return maximum days in a month
     if is_ordinary_year(year):
         days = {
             '01': 31,
@@ -68,6 +84,7 @@ def days(year, month):
 
 
 def date_is_legal(year, month, date):
+    # check date validity
     if 0 < int(date) < days(year, month):
         return True
     else:
@@ -75,6 +92,7 @@ def date_is_legal(year, month, date):
 
 
 def check_id_data(n, debug):
+    # ID Number validity checker using above functions
     var = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
 
     # 'x'->'X'
@@ -109,6 +127,7 @@ def check_id_data(n, debug):
 
 
 def check_id_code(n, debug):
+    # ID Number validity checker
     if check_id_length(n) and check_x(n):
         results = check_id_data(n, debug)
         if results is not None:
@@ -120,5 +139,6 @@ def check_id_code(n, debug):
 
 
 if __name__ == '__main__':
+    # Code used for debugging
     code = input("请输入18位身份证号:")
     print(check_id_code(code, False))

@@ -1,3 +1,13 @@
+########################################################
+#
+#    MODULE PREPROCESSOR
+#      PREPROCESSOR preprocess image by thresholding
+#    and removing noises. Then preprocessor would crop
+#    name area, nationality area, id number area into
+#    new images.
+#
+########################################################
+
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -39,27 +49,36 @@ def automatic_brightness_and_contrast(image, clip_hist_percent=1):
 
 
 def preprocess(image):
+    # Adjust brightness and contrast
     image, alpha, beta = automatic_brightness_and_contrast(image, 4)
+    # Clip color value
     image = np.clip((1.99 * image - 20), 0, 255).astype(np.uint8)
+    # Convert colorspace to GRAY
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    # Adaptive thresholding
     image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    # Resize image to a fixed size
     image = cv2.resize(image, (1792, 1128))
+    # Binary thresholding
     _, image = cv2.threshold(image, 229, 255, cv2.THRESH_BINARY)
     return image / 255.
 
 
 def crop(image, debug=True):
+    # Define Range of Interest. We would crop datas using these positions
     roi = [
         ((290, 120), (800, 270), 'name'),
         ((670, 280), (920, 410), 'nationality'),
         ((290, 560), (1110, 900), 'address'),
         ((550, 910), (1620, 1090), 'number'),
     ]
+    # Cropping data from image
     images = []
     for r in roi:
         sub_image = image[r[0][1]:r[1][1], r[0][0]:r[1][0]]
         images.append(sub_image)
     if debug:
+        # Plotting cropping boundaries if debug mode is on
         image_copy = np.copy(image)
         for r in roi:
             image_copy = cv2.rectangle(image_copy, r[0], r[1], (0, 0, 0), 2)

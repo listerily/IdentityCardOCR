@@ -70,7 +70,7 @@ class DataAugmentation:
         return np.clip(img, 0, 255)
 
     def make_spots(self, img):
-        # Randomly apply circle shaped noises on the canvas.
+        # Randomly generate circle shaped noises on the canvas.
         origin_img = img
         for i in range(random.randint(1, 3)):
             temp_x = np.random.randint(0, img.shape[0])

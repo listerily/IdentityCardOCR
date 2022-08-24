@@ -57,7 +57,7 @@ def locate(scale_ratio, image, debug):
 
 def locate_id_card(image, debug):
     pool = ThreadPoolExecutor()
-    ratios = [0.8, 0.5, 0.3, 0.2, 0.15, 0.1, 0.05, 0.02]
+    ratios = [0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1, 0.08]
     futures = []
     for ratio in ratios:
         future = pool.submit(locate, ratio, image, debug)

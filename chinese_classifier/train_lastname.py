@@ -1,14 +1,24 @@
+########################################################
+#
+#    MODULE TRAIN LASTNAME
+#      TRAIN LASTNAME trains lastname characters
+#    classifier using lastname datasets.
+#
+########################################################
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+# Declaring chinese text font for matplotlib
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-EPOCHS = 1
+EPOCHS = 5
 LEARNING_RATE = 0.001
 MODEL_FILEPATH = '../saved_models/lastname_classifier'
 
 
+# Model definition
 class LastNameClassifier(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
@@ -70,21 +80,14 @@ def train(model):
         metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
     )
 
-    for i in range(EPOCHS):
-        print('Epoch %d/%d' % (i, EPOCHS))
-        for j in range(10):
-            data = np.load(('dataset/lastname_%d.npz' % j))
-            x = data['arr_0']
-            y = data['arr_1']
+    data = np.load('dataset/lastname_1.npz')
+    x = data['arr_0']
+    y = data['arr_1']
 
-            dataset = tf.data.Dataset.from_tensor_slices((x, y))
-            dataset = dataset.shuffle(buffer_size=1000000)
-            dataset = dataset.batch(batch_size=32)
-            model.fit(dataset, epochs=1)
-            del data
-            del x
-            del y
-            del dataset
+    dataset = tf.data.Dataset.from_tensor_slices((x, y))
+    dataset = dataset.shuffle(buffer_size=1000000)
+    dataset = dataset.batch(batch_size=32)
+    model.fit(dataset, epochs=EPOCHS)
 
 
 def evaluate(model):
@@ -102,8 +105,11 @@ def save(model):
 
 
 def train_and_save():
+    # Create model and train it.
     model = LastNameClassifier(99, name='lastname_classifier')
     train(model)
+
+    # Save and evaluation
     evaluate(model)
     save(model)
 

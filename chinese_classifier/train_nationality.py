@@ -1,11 +1,19 @@
+########################################################
+#
+#    MODULE TRAIN NATIONALITY
+#      TRAIN NATIONALITY trains nationality characters
+#    classifier using nationality datasets.
+#
+########################################################
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import pandas as pd
 import random
-from keras.layers import *
 from chinese_gen import DataGenerator
+# Declaring chinese text font for matplotlib
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -13,6 +21,7 @@ EPOCHS = 15
 MODEL_FILEPATH = '../saved_models/chinese_nationality_classifier'
 
 
+# Model definition
 class VGG(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
@@ -79,25 +88,32 @@ def save(model):
 
 
 def train_and_save():
+    # Before training started, we use data generator to generate datasets and store them in RAM.
     generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'])
     model = VGG(87, name='VGG')
-    train_dataset = generate_dataset(generator, 400) #每个字400张，汉另外加870
+    train_dataset = generate_dataset(generator, 400)
     test_dataset = generate_dataset(generator, 50)
     train(model, train_dataset)
+    # Evaluation and save
     evaluate(model, test_dataset)
     save(model)
 
 
 def continue_train():
+    # Load model from external files and continue training.
     generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'])
     model = tf.keras.models.load_model(MODEL_FILEPATH)
+    # Use data generator to generate data which are stored in RAM
     train_dataset = generate_dataset(generator, 20)
     test_dataset = generate_dataset(generator, 8)
     train(model, train_dataset)
+    # Evaluation and save
     evaluate(model, test_dataset)
     save(model)
 
+
 def load_and_predict():
+    # Load model and predict some images.
     model = tf.keras.models.load_model(MODEL_FILEPATH)
 
     image = cv2.imread('./%d.png' % 17)
@@ -114,6 +130,7 @@ def load_and_predict():
 
 
 def predict_some():
+    # Load model and predict some images.
     model = tf.keras.models.load_model(MODEL_FILEPATH)
     generator = DataGenerator('chinese_nationality.csv', ['STXihei.ttf'])
     data, label = generator.generate(1)

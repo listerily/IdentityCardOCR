@@ -143,14 +143,6 @@ def driver(image, locate, debug):
         }
 
 
-@app.after_request
-def cors(environ):
-    environ.headers['Access-Contorl-Allow-Origin'] = '*'
-    environ.headers['Access-Contorl-Allow-Method'] = '*'
-    environ.headers['Access-Contorl-Allow-Headers'] = 'x-requested=with,content-type'
-    return environ
-
-
 @app.route('/api', methods=['POST'], strict_slashes=False)
 def index():
     image_upload = request.data

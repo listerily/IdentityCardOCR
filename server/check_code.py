@@ -5,7 +5,7 @@ def check_id_length(n):
         return True
 
 
-def checkX(n):
+def check_x(n):
     for i in range(0, 16):
         if n[i] == 'X':
             return False
@@ -34,7 +34,7 @@ def month_is_legal(month):
 
 
 def days(year, month):
-    if (is_ordinary_year(year)):
+    if is_ordinary_year(year):
         days = {
             '01': 31,
             '02': 28,
@@ -75,10 +75,6 @@ def date_is_legal(year, month, date):
 
 
 def check_id_data(n, debug):
-    # birth_year = None
-    # birth_month = None
-    # birth_date = None
-
     var = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
 
     # 'x'->'X'
@@ -113,7 +109,7 @@ def check_id_data(n, debug):
 
 
 def check_id_code(n, debug):
-    if check_id_length(n) and checkX(n):
+    if check_id_length(n) and check_x(n):
         results = check_id_data(n, debug)
         if results is not None:
             return results

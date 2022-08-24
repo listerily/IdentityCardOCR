@@ -1,6 +1,15 @@
+########################################################
+#
+#    MODULE TRAIN FIRSTNAME
+#      TRAIN FIRSTNAME trains firstname characters
+#    classifier using firstname datasets.
+#
+########################################################
+
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+# Declaring chinese text font for matplotlib
 plt.rcParams["font.sans-serif"] = ['SimHei']
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -9,6 +18,7 @@ LEARNING_RATE = 0.001
 MODEL_FILEPATH = '../saved_models/firstname_classifier'
 
 
+# Model definition
 class FirstNameClassifier(tf.keras.Model):
     def __init__(self, num_classes, name=None):
         super().__init__(name=name)
@@ -65,6 +75,9 @@ class FirstNameClassifier(tf.keras.Model):
 
 
 def train(model):
+    # ATTENTION: dataset file is not included in our submitted archive because they're too large.
+    # Please generate them before your training.
+    # Datasets could be generated using chinese_gen.py
     print('Training')
     data = np.load('dataset/firstname_0.npz')
     dataset = tf.data.Dataset.from_tensor_slices((data['arr_0'], data['arr_1']))
@@ -91,20 +104,21 @@ def save(model):
 
 
 def train_and_save():
-    # Train from empty
-    # model = FirstNameClassifier(1000, name='firstname_classifier')
-    # model.compile(
-    #     optimizer=tf.keras.optimizers.Adadelta(learning_rate=LEARNING_RATE),
-    #     loss=tf.keras.losses.sparse_categorical_crossentropy,
-    #     metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
-    # )
+    # Create model and train it.
+    model = FirstNameClassifier(1000, name='firstname_classifier')
+    model.compile(
+        optimizer=tf.keras.optimizers.Adadelta(learning_rate=LEARNING_RATE),
+        loss=tf.keras.losses.sparse_categorical_crossentropy,
+        metrics=[tf.keras.metrics.sparse_categorical_crossentropy, tf.keras.metrics.sparse_categorical_accuracy]
+    )
+    train(model)
+
+    # Load trained model and continue training.
+    # model = tf.keras.models.load_model('../saved_models/firstname_classifier')
     # train(model)
 
-    # Continue train from trained model
-    model = tf.keras.models.load_model('../saved_models/firstname_classifier')
-    #train(model)
-
-    # save(model)
+    # Save and evaluation
+    save(model)
     evaluate(model)
 
 

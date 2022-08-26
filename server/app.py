@@ -89,7 +89,7 @@ def driver(image, locate, debug):
     # Output predicted results
     id_code = ''
     for r in range(0, len(digit_results)):
-        id_code += str(digit_results[r])
+        id_code += str(digit_results[r] if r < 10 else 'X')
 
     # Name Classification
     name_images = np.zeros((len(name_image_boxes), 100, 100, 1))
